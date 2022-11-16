@@ -23,9 +23,8 @@ rna.NamedClust <- list(
     "rMy1" = "DCs_1",
     "rMy2" = "Macs_1",
     "rMy3" = "CLEC9a.DC",
-    "rMy4" = "M1_Macs",
+    "rMy4" = "M1.macs",
     "rMa1" = "Mast", # Mast cells
-    "rBc1" = "Plasma",
     "rKc1" = "Spinous.Kc_1",
     "rKc2" = "Spinous.Kc_2",
     "rKc3" = "HF.Kc_1",
@@ -35,15 +34,16 @@ rna.NamedClust <- list(
     "rMu2" = "Pericytes",
     "rVe1" = "Vas.Endo",
     "rLe1" = "Lymph.Endo",
-    "rMe1" = "Melanocytes",
-    "rMe2" = "McSC" # Melanocyte stem cells
+    "rMe1" = "Melanocytes_1",
+    "rMe2" = "Melanocytes_2",
+    "rBc1" = "Plasma",
 )
 
 rna.FineClust <- list(
     # Lymphoid / T-cells
-    "rTc1" = "Th_1", # T-helper: NR3C1, RORA, IL7R, CREM, etc. 
-    "rTc2" = "Th_2", # T-helper: JUN, FOS, HSP, CD69 etc.
-    "rTc3" = "Tc",  # Cytotoxic T-cells: CCL4, CCL5, CD8A, GZMK, IFNG  
+    "rTc1" = "CD4.Tc_1", # T-helper: NR3C1, RORA, IL7R, CREM, etc. 
+    "rTc2" = "CD4.Tc_2", # T-helper: JUN, FOS, HSP, CD69 etc.
+    "rTc3" = "CD8_Tc_1",  # Cytotoxic T-cells: CCL4, CCL5, CD8A, GZMK, IFNG  
     "rTc4" = "Treg", # Regulatory T cells: IKZF2, IL2RA, CTLA4, FOXP3 
     "rTc5" = "NK", # Natural Killer cells: XCL1, XCL2, GNLY, NKG7, KLRD1
     "rTc6" = "Cyc.Tc", # Cycling T cells: MKI67, TOP2A, etc.
@@ -55,7 +55,7 @@ rna.FineClust <- list(
     "rMy5" = "M1.macs", # IL15, IL32, CCR7 (CCL19, CCL17)
     "rMy6" = "TCR.macs", # CD3, TCR gene positive macrophages
     "rMy7" = "TREM2.macs", # TREM2
-    "rMy8" = "Plasma_contam", # (MS4A1, IGHM, CD79A, Stray B-cells...)
+    "rMy8" = "Plasma.contam", # (MS4A1, IGHM, CD79A; likely contaminating plasma cells / doublets)
     # Keratinocytes
     "rKc1" = "Basal.Kc_1",
     "rKc2" = "Spinous.Kc_1",
@@ -68,12 +68,12 @@ rna.FineClust <- list(
     "rKc9" = "Isthmus", # CD200, AR, PPARG, KRT7 (Isthmus/Sebaceous)
     "rKc10" = "Eccrine", # AQP5, KRT7
     # Fibroblasts
-    "rFb1" = "Fb_1", # CXCL1,2,3
+    "rFb1" = "D.Fib_1", # CXCL1,2,3
     "rFb2" = "D.Sheath", # COL11A1, EDNRA
-    "rFb3" = "Fb_2", # CCL19, CXCL12
-    "rFb4" = "Fb_3", # APCDD1, COL18A1, F13A1
-    "rFb5" = "Fb_4", # WISP2, AOX1, ARFGEF3
-    "rFb6" = "Fb_5", # NECAB1, SCN7A
+    "rFb3" = "D.Fib_2", # CCL19, CXCL12
+    "rFb4" = "D.Fib_3", # APCDD1, COL18A1, F13A1
+    "rFb5" = "D.Fib_4", # WISP2, AOX1, ARFGEF3
+    "rFb6" = "D.Fib_5", # NECAB1, SCN7A
     "rFb7" = "D.Papilla", # HHIP, PTCH1, etc.
     # Endothelial
     "rVe1" = "Vas.Endo_1",
@@ -83,11 +83,11 @@ rna.FineClust <- list(
     "rVe4" = "Vas.Endo_4",
     "rVe5" = "Unknown",
     # Non-subclustered
-    "rMa1" = "Mast", # Mast cells
+    "rMa1" = "Mast",
     "rMu1" = "Muscle",
-    "rMu2" = "Pericytes", # Pericytes
-    "rMe1" = "Melanocytes",
-    "rMe2" = "McSC", # Melanocyte stem cells
+    "rMu2" = "Pericytes",
+    "rMe1" = "Melanocytes_1",
+    "rMe2" = "Melanocytes_2",
     "rBc1" = "Plasma",
     "Other" = "Other",
     # Hair Folicle Subclustered
@@ -125,11 +125,11 @@ atac.NamedClust <- list(
 
 atac.FineClust <- list(
     # Lymphoid / T-cells
-    "aTc1" = "Th_1", # T-helper: NR3C1, RORA, IL7R, CREM, etc. 
-    "aTc2" = "Th_2", # T-helper: JUN, FOS, HSP, CD69 etc.
-    "aTc3" = "Tc",  # Cytotoxic T-cells: CCL4, CCL5, CD8A, GZMK, IFNG  (Also NK cells absorbed here)
+    "aTc1" = "CD4.Tc_1", # T-helper: NR3C1, RORA, IL7R, CREM, etc. 
+    "aTc2" = "CD4.Tc_2", # T-helper: JUN, FOS, HSP, CD69 etc.
+    "aTc3" = "CD8.Tc",  # Cytotoxic T-cells: CCL4, CCL5, CD8A, GZMK, IFNG  (Also NK cells absorbed here)
     "aTc4" = "Treg", # Regulatory T cells: IKZF2, IL2RA, CTLA4, FOXP3 
-    "aTc5" = "Th_3",  # Cytotoxic T-cells: CCL4, CCL5, CD8A, GZMK, IFNG 
+    "aTc5" = "CD4.Tc_3",  
     # Myeloid
     "aMy1" = "M2.macs_1",
     "aMy2" = "cDC2_1", # CD1c, CLEC10a (conventional DCs - type 2)
@@ -151,18 +151,18 @@ atac.FineClust <- list(
     "aKc10" = "Eccrine", # AQP5
     "aKc11" = "Unknown_1", # (Suspected doublet)
     # Fibroblasts
-    "aFb1" = "Fb_1", 
-    "aFb2" = "Fb_2", 
+    "aFb1" = "D.Fib_1", 
+    "aFb2" = "D.Fib_2", 
     "aFb3" = "D.Sheath", # COL11A1
-    "aFb4" = "Fb_3", # NECAB1, SCN7A (rFb5)
-    "aFb5" = "Fb_4",
+    "aFb4" = "D.Fib_3", # NECAB1, SCN7A (rFb5)
+    "aFb5" = "D.Fib_4",
     "aFb6" = "D.Papilla", # HHIP, PTCH1, etc.
     # Endothelial
     "aVe1" = "Vas.Endo_1",
     "aVe2" = "Vas.Endo_2",
     "aVe3" = "Vas.Endo_3",
     "aVe4" = "Unknown_2",
-    "aLe1" = "Lymph.Endo_1",
+    "aLe1" = "Lymph.Endo",
     # Non-subclustered
     "aMu1" = "Muscle",
     "aMu2" = "Pericytes",

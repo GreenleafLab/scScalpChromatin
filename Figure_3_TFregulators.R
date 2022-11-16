@@ -320,6 +320,10 @@ for(motif in regulators){
     plot_df[plot_df$symbol %in% c(pos_top_genes, neg_top_genes) & plot_df$symbol %in% markerGenes,]$toLabel <- "YES"
   }
   res_list[[motif_short]] <- pos_top_genes # Save regulatory targets
+  # Save dataframe of results
+  save_df <- plot_df[plot_df$symbol %in% c(pos_top_genes, neg_top_genes),c(1:5)]
+  save_df <- save_df[order(save_df$Correlation, decreasing=TRUE),]
+  saveRDS(save_df, paste0(regPlotDir, sprintf("/regulatory_targets_%s.rds", motif_short)))
   plot_df <- plot_df[order(plot_df$mLog10pval, decreasing=FALSE),]
   # Label motif as well
   plot_df$toLabel[which(plot_df$symbol == motif_short)] <- "YES"
@@ -474,25 +478,3 @@ enrichment_res <- lapply(names(reg_targets), function(tf){
 names(enrichment_res) <- names(reg_targets)
 
 
-
-
-# ol_genes <- tp63_pos[tp63_pos %in% qu_neg]
-
-# # Hypergeometric enrichment of TP63 regulatory targets in RNA-seq dataset
-# q <- length(ol_genes)     # q = number of white balls drawn without replacement
-# m <- length(qu_neg)       # m = number of white balls in urn
-# n <- length(allGenes) - m # n = number of black balls in urn
-# k <- length(tp63_pos)     # k = number of balls drawn from urn
-# log10pval <- -phyper(q, m, n, k, lower.tail=FALSE, log.p=TRUE)/log(10)
-# pval <- phyper(q, m, n, k, lower.tail=FALSE, log.p=FALSE)
-
-# sig_neg <- sig_res[sig_res$log2FoldChange < 0,]$symbol %>% unname()
-# klf4_pos <- res_list$KLF4
-# ol_genes <- klf4_pos[klf4_pos %in% sig_neg]
-
-# # Hypergeometric enrichment of TP63 regulatory targets in RNA-seq dataset
-# q <- length(ol_genes)     # q = number of white balls drawn without replacement
-# m <- length(sig_neg)      # m = number of white balls in urn
-# n <- length(allGenes) - m # n = number of black balls in urn
-# k <- length(klf4_pos)     # k = number of balls drawn from urn
-# log10pval <- -phyper(q, m, n, k, lower.tail=FALSE, log.p=TRUE)/log(10)
