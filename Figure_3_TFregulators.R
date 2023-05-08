@@ -24,7 +24,7 @@ addArchRThreads(threads = 8)
 
 # set working directory
 subgroup <- "Keratinocytes"
-wd <- sprintf("/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scATAC_preprocessing/subclustered_%s", subgroup)
+wd <- sprintf("/oak/stanford/groups/wjg/boberrey/hairATAC/results/scATAC_preprocessing/subclustered_%s", subgroup)
 
 
 #Set/Create Working Directory to Folder
@@ -47,11 +47,13 @@ corrCutoff <- 0.45 # Used in labeling peak2gene links
 atac_proj <- loadArchRProject(wd, force=TRUE)
 
 # Non-ArchR plots:
-plotDir <- paste0(atac_proj@projectMetadata$outputDirectory, "/Plots")
+#plotDir <- paste0(atac_proj@projectMetadata$outputDirectory, "/Plots")
+plotDir <- paste0(atac_proj@projectMetadata$outputDirectory, "/Plots_revisions")
+dir.create(plotDir, showWarnings = FALSE, recursive = TRUE)
 
-#############################################################
+##########################################################################################
 # Identify Correlated TF Motifs and TF Gene Score/Expression
-#############################################################
+##########################################################################################
 
 # To identify 'Positive TF regulators', i.e. TFs whose motif accessibility 
 # is correlated with with their own gene activity (either by gene score or gene expression)
@@ -146,10 +148,9 @@ pdf(paste0(plotDir, "/corGIM_MM_posTFregulators.pdf"), width=5, height=5)
 p
 dev.off()
 
-
-#############################################################
+##########################################################################################
 # Identify regulatory targets of TFs 
-#############################################################
+##########################################################################################
 
 # ChromVAR deviations matrix: (rows motif names x cols cell names)
 motifMatrix <- getMatrixFromProject(atac_proj, useMatrix="MotifMatrix")
@@ -283,7 +284,7 @@ markerGenes <- c(cornification_genes, hemidesmosome_genes, hfdev_genes, markerGe
 # Store results for each TF
 res_list <- list()
 
-###########################################
+##########################################################################################
 for(motif in regulators){
   motif_short <- strsplit(motif,"_")[[1]][1]
   # First get motif positions
@@ -362,6 +363,7 @@ for(motif in regulators){
       + xlab("Motif Correlation to Gene") 
       + scale_color_gradientn(colors=cmaps_BOR$zissou, limits=c(0, maxPval))
       + scale_y_continuous(expand = expansion(mult=c(0,0.05)))
+      + scale_x_continuous(limits = c(-0.85, 0.955)) # Force plot limits
       + ggtitle(sprintf("%s putative targets", motif_short))
       )
   # Positively regulated genes:
@@ -386,7 +388,7 @@ for(motif in regulators){
   print(down_go_plot)
   dev.off()
 }
-###########################################
+##########################################################################################
 
 #################################################################################################################################
 # Test for enrichment of differential genes from orthogonal datasets of mutant TFs or TF knockdowns
@@ -477,4 +479,4 @@ enrichment_res <- lapply(names(reg_targets), function(tf){
   }) 
 names(enrichment_res) <- names(reg_targets)
 
-
+##########################################################################################

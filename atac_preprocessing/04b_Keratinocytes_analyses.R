@@ -24,7 +24,7 @@ addArchRThreads(threads = 8)
 
 # set working directory
 subgroup <- "Keratinocytes"
-wd <- sprintf("/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scATAC_preprocessing/subclustered_%s", subgroup)
+wd <- sprintf("/oak/stanford/groups/wjg/boberrey/hairATAC/results/scATAC_preprocessing/subclustered_%s", subgroup)
 
 #Set/Create Working Directory to Folder
 dir.create(wd, showWarnings = FALSE, recursive = TRUE)
@@ -48,7 +48,7 @@ pointSize <- 1.0
 ###########################################################################################
 
 atac_proj <- loadArchRProject(wd, force=TRUE)
-rna_proj <- readRDS(sprintf("/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scRNA_preprocessing/harmonized_subclustering/%s/%s.rds", subgroup, subgroup))
+rna_proj <- readRDS(sprintf("/oak/stanford/groups/wjg/boberrey/hairATAC/results/scRNA_preprocessing/harmonized_subclustering/%s/%s.rds", subgroup, subgroup))
 
 plotDir <- paste0(atac_proj@projectMetadata$outputDirectory, "/Plots")
 
@@ -58,8 +58,8 @@ atac_sample_cmap <- sample_cmap[names(sample_cmap) %in% unique(atac_proj$Sample2
 disease_cmap <- head(cmaps_BOR$stallion,3)
 names(disease_cmap) <- c("AA", "C_SD", "C_PB")
 
-rna_sub_cmap <- readRDS(sprintf("/home/users/boberrey/git_clones/hairATAC/rna_cmap_%s.rds", subgroup))
-atac_sub_cmap <- readRDS(sprintf("/home/users/boberrey/git_clones/hairATAC/atac_cmap_%s.rds", subgroup))
+rna_sub_cmap <- readRDS(paste0(scriptPath, sprintf("/rna_cmap_%s.rds", subgroup)))
+atac_sub_cmap <- readRDS(paste0(scriptPath, sprintf("/atac_cmap_%s.rds", subgroup)))
 
 # Load labels from file
 source(paste0(scriptPath, "/cluster_labels.R"))
@@ -242,6 +242,27 @@ pdf(paste0(plotDir, sprintf("/miloR_atac_DA_UMAP_%s.pdf", subgroup)), width=7, h
 nh_graph_pl
 dev.off()
 
+# Save differential abundance results
+
+# First need to map Milo neighborhoods to majority cluster IDs
+nhoodmat <- milo_proj@nhoods
+cell_to_clust <- atac_proj$FineClust
+names(cell_to_clust) <- atac_proj$cellNames
+
+# For each nhood, identify the most common cluster
+nhood_to_clust <- apply(nhoodmat, 2, function(x){
+  cellnames <- names(x[x>0]) # Which cells are part of this nhood
+  names(sort(table(cell_to_clust[cellnames]), decreasing=TRUE))[1] # Most frequent cluster
+  })
+
+# Assign majority cluster to nhoods
+da_results$majority_cluster <- nhood_to_clust[da_results$Nhood]
+da_results$majority_lclust <- unlist(atac.FineClust)[da_results$majority_cluster]
+da_results <- da_results[order(da_results$PValue, decreasing=FALSE),]
+
+# Save table
+table_dir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/supplemental_tables"
+write.table(da_results, file=paste0(table_dir, "/keratinocyte_subclustered_Milo_results.tsv"), quote=FALSE, sep="\t", col.names=NA, row.names=TRUE)
 
 ####################################################################################
 # Marker Genes
@@ -549,7 +570,7 @@ sg <- "HF_Kc"
 sg_clust <- c("HF.Kc_2", "HF.Kc_4", "HF.Kc_6")
 sg_cells <- getCellNames(atac_proj)[as.character(atac_proj@cellColData[["LFineClust"]]) %in% sg_clust]
 
-outdir <- sprintf("/scratch/groups/wjg/boberrey/hairATAC/analyses/scATAC_preprocessing/subclustered_%s", sg)
+outdir <- sprintf("/oak/stanford/groups/wjg/boberrey/hairATAC/results/scATAC_preprocessing/subclustered_%s", sg)
 subClusterArchR(atac_proj, subCells=sg_cells, outdir=outdir)
 
 ####################################################################################

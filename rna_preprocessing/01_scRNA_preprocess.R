@@ -39,7 +39,7 @@ estDubRate <- 0.04 # Rough estimate based on targeting ~8k cells
 useDecontX <- TRUE
 
 #Set/Create Working Directory to Folder
-wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scRNA_preprocessing/preprocessing_output"
+wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/scRNA_preprocessing/preprocessing_output"
 dir.create(wd, showWarnings = FALSE, recursive = TRUE)
 setwd(wd)
 
@@ -62,7 +62,8 @@ dir.create(plotDir, showWarnings = FALSE, recursive = TRUE)
 
 # Load each of the scalp datasets
 message("Reading in data...")
-raw_data_dir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/analyses/scRNA_preprocessing/filtered_feature_bc_matrices/"
+#raw_data_dir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/analyses/scRNA_preprocessing/filtered_feature_bc_matrices/"
+raw_data_dir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scRNA/filtered_feature_bc_matrices"
 data_dirs <- list.dirs(path=raw_data_dir, full.names=TRUE, recursive=FALSE)
 data_dirs <- data_dirs[grepl("/[A-Z_]+[0-9]+$", data_dirs)]
 names(data_dirs) <- str_extract(data_dirs, "(?<=/)[^/]*$")

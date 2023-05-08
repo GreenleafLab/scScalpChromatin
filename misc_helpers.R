@@ -80,8 +80,8 @@ convertMouseGeneList <- function(genes){
   # Function to convert mouse to human gene names
   # see: https://www.r-bloggers.com/converting-mouse-to-human-gene-names-with-biomart-package/
   require("biomaRt")
-  human <- useMart("ensembl", dataset="hsapiens_gene_ensembl")
-  mouse <- useMart("ensembl", dataset="mmusculus_gene_ensembl")
+  human <- useMart("ensembl", dataset="hsapiens_gene_ensembl", host="https://dec2021.archive.ensembl.org/")
+  mouse <- useMart("ensembl", dataset="mmusculus_gene_ensembl", host="https://dec2021.archive.ensembl.org/")
    
   genesV2 <- getLDS(attributes=c("mgi_symbol"), filters="mgi_symbol", values=genes, 
     mart=mouse, attributesL=c("hgnc_symbol"), martL=human, uniqueRows=TRUE)

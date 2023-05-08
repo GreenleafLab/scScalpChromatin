@@ -1,8 +1,8 @@
 #!/usr/bin/env Rscript
 
-############################################
+############################################################################################################
 # Identify marker genes and make some plots
-############################################
+############################################################################################################
 
 library(dplyr)
 library(tidyr)
@@ -30,15 +30,15 @@ source(paste0(scriptPath, "/GO_wrappers.R"))
 # Setup working directory and make a plot dir
 
 #Set/Create Working Directory to Folder
-wd <- sprintf("/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scRNA_preprocessing/harmonized_subclustering/%s", subgroup)
+wd <- sprintf("/oak/stanford/groups/wjg/boberrey/hairATAC/results/scRNA_preprocessing/harmonized_subclustering/%s", subgroup)
 plotDir <- paste0(wd,"/expression_plots")
 dir.create(wd, showWarnings = FALSE, recursive = TRUE)
 setwd(wd)
 dir.create(plotDir, showWarnings = FALSE, recursive = TRUE)
 
-##########################################
+############################################################################################################
 # Read in previously created Seurat object
-##########################################
+############################################################################################################
 
 obj <- readRDS(paste0(wd, sprintf('/%s.rds', subgroup)))
 allGenes <- rownames(obj)
@@ -51,9 +51,9 @@ names(fineClust) <- 0:(nclust-1)
 obj$FineClust <- fineClust[obj$Clusters] %>% unname
 Idents(obj) <- "FineClust"
 
-##########################################
+############################################################################################################
 # Identify markers per cluster (And GO terms)
-##########################################
+############################################################################################################
 
 # find markers for every cluster compared to all remaining cells, report only the positive ones
 message("Finding marker genes using Seurat...")
@@ -102,9 +102,9 @@ for(n in names(GOresults)){
     write.table(GOresults[[n]], file=paste0(goDir, "/", n, "_go_terms.tsv"), quote=FALSE, sep='\t')
 }
 
-###########################
+############################################################################################################
 # UMAP of high level groups
-###########################
+############################################################################################################
 message("Plotting selected marker features on UMAP...")
 
 # Set colormaps
@@ -112,12 +112,10 @@ qualcmap <- cmaps_BOR$stallion
 quantcmap <- cmaps_BOR$sunrise
 
 # Markers for identifying broad classes of cells:
-# https://www.rndsystems.com/resources/cell-markers/immune-cells/dendritic-cells/human-tissue--specific-dendritic-cell-subset-markers
-# https://www.biocompare.com/Editorial-Articles/572982-Dendritic-Cell-Markers/
 featureSets <- list(
     # APC subtypes:
-    #"Mast_cells" = c("KIT", "ENPP3", "FCER1A", "IL1RL1", "TPSB2"), # KIT = CD117, ENPP3 = CD203c, FCER1A = IgE receptor alpha, TPSB2 is a beta tryptase, which are supposed to be common in mast cells
-    "Macrophages" = c("CD163", "LGMN", "FCGR2A", "C1QB", "C5AR1", "MAFB", "FOLR2"), # FOLR2 is a somewhat studied mac marker?
+    #"Mast_cells" = c("KIT", "ENPP3", "FCER1A", "IL1RL1", "TPSB2"), # KIT = CD117, ENPP3 = CD203c, FCER1A = IgE receptor alpha, TPSB2 is a beta tryptase
+    "Macrophages" = c("CD163", "LGMN", "FCGR2A", "C1QB", "C5AR1", "MAFB", "FOLR2"),
     "M1_macs" = c("CCL20", "CXCL3", "IL1B", "IL6", "IL12A", "IFNG", "TNF", "CD163"), # CD163 should be NEGATIVE
     "M2a_macs" = c("CD163", "CD200", "IRF4", "TGFB1", "TGFB2", "CCL2", "STAT6"),
     "TREM2_macs" = c("TREM2", "C3", "FCGBP", "FCGR3A", "OSM", "APOE"),
@@ -126,8 +124,7 @@ featureSets <- list(
     "moDC" = c("CD14", "CD1A", "CD1C", "ITGAX", "ITGAM", "SIRPA"), # SIRPA = CD172a
     "cDC1" = c("BTLA", "ITGAE", "CD1A", "ITGAM", "CLEC9A", "XCR1", "THBD"), # THBD = CD141 = BDCA-3 (thrombomodulin)
     "cDC2" = c("CD14", "CD163", "CLEC10A", "NOTCH2", "ITGAM", "SIRPA", "CX3CR1", "CD1C", "CD2"), # THBD = CD141 = BDCA-3 (thrombomodulin)
-    "Differential" = c("CCL19", "EBI3", "HERPUD1", "STAT5A", "TNFSF14", "MARCO",  "SFRP2", "TGFB2", "IL1RN", "ACKR3"),
-    "TCR_macs" = c("CD3D", "TRAC", "TRBC1", "SPOCK2", "CD14", "CD2") # Should be CD2 negative(?) and CD14 positive
+    "TCR_macs" = c("CD3D", "TRAC", "TRBC1", "SPOCK2", "CD14", "CD2")
 )
 
 selectedGenes <- unlist(featureSets) %>% unname()
@@ -188,7 +185,7 @@ dev.off()
 fineclust_cmap <- cmaps_BOR$stallion[1:length(fineClust)]
 names(fineclust_cmap) <- names(getFreqs(obj$FineClust))
 # Save color palette for 'NamedClust'
-saveRDS(fineclust_cmap, file = sprintf("/home/users/boberrey/git_clones/hairATAC/rna_cmap_%s.rds", subgroup))
+saveRDS(fineclust_cmap, file = paste0(scriptPath, sprintf("/rna_cmap_%s.rds", subgroup)))
 
 ### Cluster UMAP ###
 umapDF <- data.frame(Embeddings(object = obj, reduction = "umap"), obj$FineClust)
@@ -217,9 +214,9 @@ dev.off()
 saveRDS(obj, file = paste0(wd, sprintf('/%s.rds', subgroup)))
 
 
-#####################################
+############################################################################################################
 # Subset of marker genes for figures
-#####################################
+############################################################################################################
 
 source(paste0(scriptPath, "/cluster_labels.R"))
 
@@ -242,7 +239,7 @@ clustOrder <- c(
     "rMy3", # "M2.macs_2", # CXCL2, CXCL3, (CCL20?, S100A8/9?) 
     "rMy7", # "TREM2.macs", # TREM2
     "rMy1", # "cDC2", # CD1c, CLEC10a (conventional DCs - type 2)
-    "rMy4", # "CLEC9a.DC", # CLEC9a, CLEC4C, XCR1? https://www.frontiersin.org/articles/10.3389/fimmu.2014.00239/full
+    "rMy4", # "CLEC9a.DC", # CLEC9a, CLEC4C, XCR1
     "rMy8" # Plasma cell contamination / doublets
 )
 
@@ -271,4 +268,5 @@ dotPlot(avgPctMat, xcol="grp", ycol="feature", color_col="avgExpr", size_col="pc
     xorder=unlist(rna.FineClust)[grp_order], yorder=rev(gene_order), cmap=cmaps_BOR$sunrise, aspectRatio=1.6)
 dev.off()
 
-#####################################
+############################################################################################################
+

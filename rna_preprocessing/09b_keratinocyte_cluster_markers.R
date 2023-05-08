@@ -1,8 +1,8 @@
 #!/usr/bin/env Rscript
 
-############################################
+############################################################################################################
 # Identify marker genes and make some plots
-############################################
+############################################################################################################
 
 library(dplyr)
 library(tidyr)
@@ -30,15 +30,15 @@ source(paste0(scriptPath, "/GO_wrappers.R"))
 # Setup working directory and make a plot dir
 
 #Set/Create Working Directory to Folder
-wd <- sprintf("/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scRNA_preprocessing/harmonized_subclustering/%s", subgroup)
+wd <- sprintf("/oak/stanford/groups/wjg/boberrey/hairATAC/results/scRNA_preprocessing/harmonized_subclustering/%s", subgroup)
 plotDir <- paste0(wd,"/expression_plots")
 dir.create(wd, showWarnings = FALSE, recursive = TRUE)
 setwd(wd)
 dir.create(plotDir, showWarnings = FALSE, recursive = TRUE)
 
-##########################################
+############################################################################################################
 # Read in previously created Seurat object
-##########################################
+############################################################################################################
 
 obj <- readRDS(paste0(wd, sprintf('/%s.rds', subgroup)))
 allGenes <- rownames(obj)
@@ -59,9 +59,9 @@ names(fineClust) <- 0:(nclust-1)
 obj$FineClust <- fineClust[obj$Clusters] %>% unname
 Idents(obj) <- "FineClust"
 
-##########################################
+############################################################################################################
 # Identify markers per cluster (And GO terms)
-##########################################
+############################################################################################################
 
 # find markers for every cluster compared to all remaining cells, report only the positive ones
 message("Finding marker genes using Seurat...")
@@ -109,9 +109,9 @@ for(n in names(GOresults)){
     write.table(GOresults[[n]], file=paste0(goDir, "/", n, "_go_terms.tsv"), quote=FALSE, sep='\t')
 }
 
-###########################
+############################################################################################################
 # UMAP of high level groups
-###########################
+############################################################################################################
 message("Plotting selected marker features on UMAP...")
 
 # Set colormaps
@@ -126,20 +126,17 @@ featureSets <- list(
     "HFSCs" = c(
     "SOX9", "LHX2", "NFATC1", "TCF3", # Key HFSC TFs
     "ITGA6", "CD200", "FRZB", "IL31RA", "IL13RA1", "OSMR", # Other bulge markers (IL31RA pairs w/ OSMR)
-    "CD34", "CDH3", "LGR5", "LGR6", "RUNX1" # Hair germ markers (some say HG is CD34 neg?)
+    "CD34", "CDH3", "LGR5", "LGR6", "RUNX1" # Hair germ markers
     ), # CDKN2A = P16
     "Basal_epithelia" = c("KRT15", "KRT14", "KRT5", "COL17A1"),
     "Spinous" = c("KRT1", "KRT10"),
     "Granular" = c("DSC1", "KRT2", "IVL", "TGM3"),
     "RUNX3_high" = c("RUNX1", "RUNX2", "RUNX3", "KRT23", "KRT18"),
     "HF_keratinocytes" = c(
-      "KRT25", "KRT27", "KRT28", # Type I Hair keratins
-      "KRT72", "KRT73", "KRT74", # Type II Hair keratins
       "KRT81", "KRT82", "LEF1", # Matrix hair keratins/genes
-      "KRT75", # ORS keratins / genes
-      "KRT6A", "KRT6B", # Less specific keratins
+      "KRT75", # ORS keratin
       "SOX9", "LEF1", "HOXC13", # HF TFs
-      "MGST1", "COL14A1", "CD200", # The CD200+ HF cluster 
+      "MGST1", "COL14A1", "CD200",
       "ELOVL3" # Sebaceous 
       ),
     "Glandular" = c("SCGB2A2", "SCGB1D2", "KRT7", "KRT8", "KRT19", "AQP5"),
@@ -202,7 +199,7 @@ dev.off()
 fineclust_cmap <- cmaps_BOR$stallion[1:length(fineClust)]
 names(fineclust_cmap) <- names(getFreqs(obj$FineClust))
 # Save color palette for 'NamedClust'
-saveRDS(fineclust_cmap, file = sprintf("/home/users/boberrey/git_clones/hairATAC/rna_cmap_%s.rds", subgroup))
+saveRDS(fineclust_cmap, file = paste0(scriptPath, sprintf("/rna_cmap_%s.rds", subgroup)))
 
 ### Cluster UMAP ###
 umapDF <- data.frame(Embeddings(object = obj, reduction = "umap"), obj$FineClust)
@@ -253,7 +250,7 @@ makeSubClusts <- function(obj, ident, subgroups, outdir){
   }
 }
 
-subclustDir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scRNA_preprocessing/harmonized_subclustering"
+subclustDir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/scRNA_preprocessing/harmonized_subclustering"
 dir.create(subclustDir, showWarnings = FALSE, recursive = TRUE)
 
 obj$HF_Kc <- ifelse(obj$FineClust == "rKc7", "HF_Kc", "NO")
@@ -266,9 +263,9 @@ makeSubClusts(
 )
 
 
-#####################################
+############################################################################################################
 # Subset of marker genes for figures
-#####################################
+############################################################################################################
 
 source(paste0(scriptPath, "/cluster_labels.R"))
 
@@ -321,4 +318,4 @@ dotPlot(avgPctMat, xcol="grp", ycol="feature", color_col="avgExpr", size_col="pc
     xorder=unlist(rna.FineClust)[grp_order], yorder=rev(gene_order), cmap=cmaps_BOR$sunrise, aspectRatio=1.6)
 dev.off()
 
-#####################################
+############################################################################################################

@@ -25,15 +25,18 @@ source(paste0(scriptPath, "/matrix_helpers.R"))
 source(paste0(scriptPath, "/plotting_config.R"))
 
 # gkmexplain results directory
-gkm_exp_dir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/GWAS/gkmSVM/snp_explanations"
+gkm_exp_dir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/GWAS/gkmSVM/snp_explanations"
 
 #Set/Create Working Directory to Folder
-gkm_res_dir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/GWAS/gkmSVM/snp_results"
+gkm_res_dir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/GWAS/gkmSVM/snp_results"
 dir.create(gkm_res_dir, showWarnings = FALSE, recursive = TRUE)
 setwd(gkm_res_dir)
 
 # Read in origianl SNP genomic range
-snp_gr <- readRDS("/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/GWAS/gkmSVM/snp_fastas/250bpSNPCentered.rds")
+snp_gr <- readRDS("/oak/stanford/groups/wjg/boberrey/hairATAC/results/GWAS/gkmSVM/snp_fastas/250bpSNPCentered.rds")
+
+# Directory for full ATAC project
+atac_dir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/scATAC_preprocessing/fine_clustered"
 
 ##########################################################################################
 # Functions
@@ -450,7 +453,7 @@ names(traits) <- snp_gr$linked_SNP
 significant_hits$fm_probs <- round(fm_probs[significant_hits$snp], 4)
 significant_hits$trait <- factor(traits[significant_hits$snp])
 
-# Get order of traits and 
+# Get order of traits 
 trait_order <- names(trait_groups)
 snp_totals <- unlist(lapply(snp_groups[names(trait_groups)], length))
 
@@ -486,6 +489,13 @@ sig_enrichment <- lapply(names(snp_totals), function(sg){
   df
   }) %>% do.call(rbind,.)
 
+# Get cluster information and save table
+source(paste0(scriptPath, "/cluster_labels.R"))
+sig_enrichment$LFineClust <- unlist(atac.FineClust)[sig_enrichment$cluster]
+write.table(sig_enrichment, 
+  file=paste0(gkm_res_dir, "/gkmSVM_high_effect_cluster_enrichments.tsv"), 
+  quote=FALSE, sep="\t", col.names=NA, row.names=TRUE) 
+
 OR_sig <- unmelt(sig_enrichment[sig_enrichment$trait != "random",], 
   row_col="cluster", col_col="trait", val_col="OR") %>% as.data.frame()
 
@@ -494,7 +504,7 @@ pct_sig <- t(t(nsig)/snp_totals) * 100
 # Plot OR by cluster on full UMAP
 library(ArchR)
 source(paste0(scriptPath, "/archr_helpers.R"))
-atac_proj <- loadArchRProject("/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scATAC_preprocessing/fine_clustered", force=TRUE)
+atac_proj <- loadArchRProject(atac_dir, force=TRUE)
 
 # Plot scATAC with ATAC cluster labels
 umapPlots <- list()
@@ -517,7 +527,7 @@ pdf(paste0(gkm_res_dir,"/hit_enrichments_UMAP.pdf"), width=10, height=8)
 umapPlots
 dev.off()
 
-# Subset to hits that we actually care about
+# Subset to hits
 significant_hits <- significant_hits[significant_hits$snp %in% c(snp_groups[["AGA"]], 
   snp_groups[["hair_color"]], snp_groups[["eczema"]]),]
 
@@ -534,7 +544,7 @@ significant_hits$seqlet_seq <- apply(significant_hits, 1, function(x){
 
 
 ##########################################################################################
-# Use tomtom to identify likely motif matches for each seqlet
+# Use tomtom to predict likely motif matches for each seqlet
 ##########################################################################################
 
 library(memes)

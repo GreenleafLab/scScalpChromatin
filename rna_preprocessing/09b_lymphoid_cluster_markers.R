@@ -1,8 +1,8 @@
 #!/usr/bin/env Rscript
 
-############################################
+############################################################################################################
 # Identify marker genes and make some plots
-############################################
+############################################################################################################
 
 library(dplyr)
 library(tidyr)
@@ -30,15 +30,15 @@ source(paste0(scriptPath, "/GO_wrappers.R"))
 # Setup working directory and make a plot dir
 
 #Set/Create Working Directory to Folder
-wd <- sprintf("/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scRNA_preprocessing/harmonized_subclustering/%s", subgroup)
+wd <- sprintf("/oak/stanford/groups/wjg/boberrey/hairATAC/results/scRNA_preprocessing/harmonized_subclustering/%s", subgroup)
 plotDir <- paste0(wd,"/expression_plots")
 dir.create(wd, showWarnings = FALSE, recursive = TRUE)
 setwd(wd)
 dir.create(plotDir, showWarnings = FALSE, recursive = TRUE)
 
-##########################################
+############################################################################################################
 # Read in previously created Seurat object
-##########################################
+############################################################################################################
 
 obj <- readRDS(paste0(wd, sprintf('/%s.rds', subgroup)))
 allGenes <- rownames(obj)
@@ -51,9 +51,9 @@ names(fineClust) <- 0:(nclust-1)
 obj$FineClust <- fineClust[obj$Clusters] %>% unname
 Idents(obj) <- "FineClust"
 
-##########################################
+############################################################################################################
 # Identify markers per cluster (And GO terms)
-##########################################
+############################################################################################################
 
 # find markers for every cluster compared to all remaining cells, report only the positive ones
 message("Finding marker genes using Seurat...")
@@ -101,9 +101,9 @@ for(n in names(GOresults)){
     write.table(GOresults[[n]], file=paste0(goDir, "/", n, "_go_terms.tsv"), quote=FALSE, sep='\t')
 }
 
-###########################
+############################################################################################################
 # UMAP of high level groups
-###########################
+############################################################################################################
 message("Plotting selected marker features on UMAP...")
 
 # Set colormaps
@@ -122,11 +122,11 @@ featureSets <- list(
     "Th17_cells" = c("RORA", "CCL20", "BATF", "IL1RL1", "IL6R", "IL17A", "IL17F", "IL21", "IL22"),
     "Th22_cells" = c("AHR", "CCR4", "CCR6", "CCR10", "IL6R", "IL10", "IL13", "IL22"),
     "TFH_cells" = c("IL21", "CXCL13", "IL17A", "IL17F"),
-    "Memory_Tcells" = c("CD44", "IL7R", "CCR7", "BCL6"), # CCR7 is high only in central memory T cells
+    "Memory_Tcells" = c("CD44", "IL7R", "CCR7", "BCL6"), 
     "CD8NK_Tcells" = c("CD8A", "KLRK1", "KLRD1", "IFNG", "CCL5", "GZMA", "GZMB"), # GZMK = Granzyme K, SELL = CD62L
     "Proliferating" = c("MKI67", "CDK1", "TOP2A"),
     "Tissue_res" = c("CCR7", "ITGAE", "SELL", "KLRG1",  # ITGAE = CD103; SELL = CD62L = L-selectin
-        "CCR4", "CCR8", "CCR10",  "SELPLG") # SELPLG = CLA (Cutaneous Lymphocyte Antigen)
+        "CCR4", "CCR8", "CCR10",  "SELPLG") # SELPLG = CLA
 )
 selectedGenes <- unlist(featureSets) %>% unname()
 
@@ -193,7 +193,7 @@ dev.off()
 fineclust_cmap <- cmaps_BOR$stallion[1:length(fineClust)]
 names(fineclust_cmap) <- names(getFreqs(obj$FineClust))
 # Save color palette for 'NamedClust'
-saveRDS(fineclust_cmap, file = sprintf("/home/users/boberrey/git_clones/hairATAC/rna_cmap_%s.rds", subgroup))
+saveRDS(fineclust_cmap, file = paste0(scriptPath, sprintf("/rna_cmap_%s.rds", subgroup)))
 
 ### Cluster UMAP ###
 umapDF <- data.frame(Embeddings(object = obj, reduction = "umap"), obj$FineClust)
@@ -222,9 +222,9 @@ dev.off()
 saveRDS(obj, file = paste0(wd, sprintf('/%s.rds', subgroup)))
 
 
-#####################################
+############################################################################################################
 # Subset of marker genes for figures
-#####################################
+############################################################################################################
 
 source(paste0(scriptPath, "/cluster_labels.R"))
 
@@ -271,176 +271,4 @@ dotPlot(avgPctMat, xcol="grp", ycol="feature", color_col="avgExpr", size_col="pc
     xorder=unlist(rna.FineClust)[grp_order], yorder=rev(gene_order), cmap=cmaps_BOR$sunrise, aspectRatio=1.6)
 dev.off()
 
-#####################################
-
-
-
-#####################################
-# Perform cell labeling with singleR
-#####################################
-
-# library(SingleR) # For labeling clusters
-# library(celldex)
-# library(pheatmap)
-
-# # Use normalized data for labeling
-
-# test <- GetAssayData(object=obj, slot="data")
- 
-# # Identify genes we want to blacklist
-
-# # mitochondrial:
-# mt.genes <- grep(pattern = "^MT-", x = allGenes, value = TRUE)
-# # ribosomal (small and large subunits):
-# rps.genes <- grep(pattern = "^RPS", x = allGenes, value = TRUE)
-# rpl.genes <- grep(pattern = "^RPL", x = allGenes, value = TRUE)
-# # HLA:
-# hla.genes <- grep(pattern = "^HLA-", x = allGenes, value = TRUE)
-# # Immunoglobulin (what's the pattern to use?):
-# #ig.genes <- grep(pattern = "^IG-", x = rownames(rawCounts), value = TRUE)
-# blacklist.genes <- c(mt.genes, rps.genes, rpl.genes, hla.genes)
-# valid.genes <- allGenes[allGenes %ni% blacklist.genes]
-
-# test <- test[valid.genes,]
-# test <- test[Matrix::rowSums(test) > 0,] # Remove unexpressed genes
-
-
-# runSingleR <- function(data, ref, ...){
-#   # Run the SingleR cell labeling with the provided data and reference
-#   if(class(ref)[1] == "SingleCellExperiment"){
-#     message("Detected single cell experiment...")
-#     pred <- SingleR(test = data, ref = ref, labels=ref$label, de.method="wilcox", de.n=20)
-#   }else{
-#     pred <- SingleR(test = data, ref = ref, assay.type.test=1, labels=ref$label.fine)
-#   }
-#   pred
-# }
-
-# yostPath <- "/oak/stanford/groups/wjg/boberrey/hairATAC/analyses/resources/gene_sets/yost_scRNA/"
-# BCC <- readRDS(paste0(yostPath, "/BCC_T-cells_seurat.rds"))
-# seuratYost <- BCC
-# #SCC <- readRDS(paste0(yostPath, "/BCC_T-cells_seurat.rds"))
-# #seuratYost <- merge(x = BCC, y = SCC, add.cell.ids=c("BCC", "SCC"), project="CombYost")
-# #rm(BCC, SCC)
-# #gc()
-
-# makeSCEforSingleR <- function(obj){
-#   require(SingleCellExperiment)
-#   require(scater)
-#   #obj <- readRDS(obj_path) # Read in seurat object
-#   rawCounts <- GetAssayData(object = obj, slot = "counts")
-#   sce <- SingleCellExperiment(list(counts=rawCounts),
-#       colData=DataFrame(label=obj$cluster))
-#   sce <- logNormCounts(sce)
-#   return(sce)
-# }
-
-# sceYost <- makeSCEforSingleR(seuratYost)
-
-
-# refs <- list(
-# 	"yost_scRNA" = sceYost,
-#     "DICE" = DatabaseImmuneCellExpressionData(),
-# 	"Monaco" = MonacoImmuneData(),
-# 	"Novershtern" = NovershternHematopoieticData(),
-# 	"BPEncode" = BlueprintEncodeData()
-# )
-
-# preds <- list()
-# for(refname in names(refs)){
-#   ref <- refs[[refname]]
-
-#   message(sprintf("Running prediction with ref: %s...", refname))
-#   pred <- runSingleR(test, ref)
-#   preds[refname] <- pred 
-# }
-
-
-# for(refname in names(refs)){
-
-#   pred <- preds[[refname]]
-
-# 	# Plot annotation diagnostics
-# 	pdf(paste0(plotDir, sprintf("/singleR_ScoreMap_Tcells_%s.pdf", refname)), width=15, height=8)
-# 	print(plotScoreHeatmap(pred))
-# 	dev.off()
-
-# 	# Heatmap of confusion matrix proportions
-# 	# (How to make this look better?)
-# 	cMat <- confusionMatrix(pred$labels, obj$Clusters)
-# 	cMat <- t(t(cMat)/colSums(cMat))
-
-# 	pdf(paste0(plotDir, sprintf("/singleR_clusterMap_%s.pdf", refname)), width=8, height=8)
-# 	hm <- BORHeatmap(t(cMat), clusterCols = TRUE, clusterRows = TRUE, labelRows = TRUE, labelCols = TRUE,
-# 	                 limits = c(0,0.6),
-# 	                 dataColors = cmaps_BOR$solarExtra)
-# 	draw(hm)
-# 	dev.off()
-
-# 	obj@meta.data[,sprintf("SingleR_%s", refname)] <- pred$labels
-
-# 	# We want colors to be sorted by label frequency:
-# 	labOrder <- as.data.frame(table(pred$labels))
-# 	labOrder <- labOrder[base::order(labOrder$Freq, decreasing=TRUE),]
-# 	colnames(labOrder) <- c("label", "Freq")
-# 	colorPal <- getColorMap(cmaps_BOR$cartoPrism, nrow(labOrder))
-# 	singleRcolors <- list()
-# 	for(i in seq_along(labOrder$label)){
-#   		singleRcolors[labOrder$label[i]] = colorPal[i] 
-# 	}
-
-# 	### Cluster UMAP ###
-# 	umapDF <- data.frame(Embeddings(object = obj, reduction = "umap"), pred$labels)
-# 	# Randomize cells before plotting UMAP
-# 	set.seed(1)
-# 	umapDF <- umapDF[sample(nrow(umapDF)),]
-
-# 	pdf(paste0(plotDir, sprintf("/SingleR_UMAP_Tcells_%s.pdf", refname)), width=10, height=10)
-# 	print(plotUMAP(umapDF, dataType = "qualitative", cmap = singleRcolors, point_size=pointSize))
-# 	dev.off()
-# }
-
-
-
-
-
-# # ###########################################
-# # # Calculate correlation matricies
-# # ###########################################
-
-# # # To be used for downstream analyses. Calculate with and without MAGIC smoothing
-
-# # mast.res <- fread(paste0(wd, "/differential_genes.tsv"), header=TRUE, sep='\t')
-
-# # # Use marker genes for correlation analysis to all other genes
-# # subsetx <- unique(mast.res$gene)
-
-# # expr <- GetAssayData(obj, slot = 'data') %>% t()
-# # expr <- as(expr[,Matrix::colSums(expr) > 0], "sparseMatrix") # Remove unexpressed genes
-
-# # # without magic (Warning! Very slow)
-# # start <- Sys.time()
-# # geneCorMat <- corMatrix(t(expr), subsetx=subsetx, subsety=subsetx, nThreads=4)
-# # end <- Sys.time()
-# # diff <- difftime(end, start, units="mins")
-# # message(sprintf("Finished correlations in %s minutes.", round(diff, 2)))
-
-# # # Save correlation
-# # saveRDS(geneCorMat, file = paste0(wd, sprintf("/gene_correlations_noMagic_%s.rds", subgroup)))
-
-
-# # # with magic
-# # expr <- GetAssayData(obj, slot = 'data') %>% t()
-# # expr <- as(expr[,Matrix::colSums(expr) > 0], "sparseMatrix") # Remove unexpressed genes
-# # expr <- magic(expr, n.jobs = 1, seed = 1)$result
-
-# # start <- Sys.time()
-# # geneCorMat <- corMatrix(t(expr), subsetx=subsetx, subsety=subsetx, nThreads=4)
-# # end <- Sys.time()
-# # diff <- difftime(end, start, units="mins")
-# # message(sprintf("Finished correlations in %s minutes.", round(diff, 2)))
-
-# # # Save correlation
-# # saveRDS(geneCorMat, file = paste0(wd, sprintf("/gene_correlations_yesMagic_%s.rds", subgroup)))
-
-# # ########################
+############################################################################################################

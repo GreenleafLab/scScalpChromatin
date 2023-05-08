@@ -15,7 +15,7 @@ suppressPackageStartupMessages({
 #### Parameters ####
 
 #Set/Create Working Directory to Folder
-wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scRNA_preprocessing/preprocessing_output"
+wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/scRNA_preprocessing/preprocessing_output"
 setwd(wd)
 plotDir <- paste0(wd,"/expression_plots")
 
@@ -35,7 +35,7 @@ message("Reading in data...")
 obj <- readRDS(paste0(wd, '/scalp.rds'))
 
 # color palettes
-sample_cmap <- readRDS("/home/users/boberrey/git_clones/hairATAC/sample_cmap.rds")
+sample_cmap <- readRDS(paste0(scriptPath, "/sample_cmap.rds"))
 sample_cmap <- sample_cmap[names(sample_cmap) %in% unique(obj$Sample)] %>% unlist()
 
 pointSize <- 0.15
@@ -54,7 +54,7 @@ for(subgroup in subgroups){
     message(sprintf("Reading in subcluster %s", subgroup))
 
     # Read in subclustered object
-    sub_dir <- sprintf("/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scRNA_preprocessing/harmonized_subclustering/%s", subgroup)
+    sub_dir <- sprintf("/oak/stanford/groups/wjg/boberrey/hairATAC/results/scRNA_preprocessing/harmonized_subclustering/%s", subgroup)
     sub_obj <- readRDS(paste0(sub_dir, sprintf('/%s.rds', subgroup)))
 
     # Add ManualLabels to full Seurat object

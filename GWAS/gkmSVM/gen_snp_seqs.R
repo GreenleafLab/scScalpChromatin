@@ -27,7 +27,7 @@ source(paste0(scriptPath, "/misc_helpers.R"))
 source(paste0(scriptPath, "/archr_helpers.R"))
 
 # set working directory (The directory of the full preprocessed archr project)
-wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scATAC_preprocessing/fine_clustered"
+wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/scATAC_preprocessing/fine_clustered"
 fm_dir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/analyses/resources/gwas/PICS2"
 
 #Set/Create Working Directory to Folder
@@ -309,7 +309,7 @@ for(grn in gr_names){
 # Create all alternate alleles for original sequence contexts
 ##################################################################
 
-fasta_dir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/GWAS/gkmSVM/snp_fastas"
+fasta_dir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/GWAS/gkmSVM/snp_fastas"
 dir.create(fasta_dir, showWarnings = FALSE, recursive = TRUE)
 
 # Get new gr_names with shuffled sequences

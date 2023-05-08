@@ -17,14 +17,14 @@ ml system gcc
 export PATH=$HOME/git_clones/lsgkm-svr/bin:$PATH
 
 # Directory containing fit models
-model_dir=/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/GWAS/gkmSVM/full_models_1000bp 
+model_dir=/oak/stanford/groups/wjg/boberrey/hairATAC/results/GWAS/gkmSVM/full_models_1000bp 
 
 # Directory for prediction results
-result_dir=/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/GWAS/gkmSVM/snp_explanations
+result_dir=/oak/stanford/groups/wjg/boberrey/hairATAC/results/GWAS/gkmSVM/snp_explanations
 if [ ! -d ${result_dir} ]; then mkdir ${result_dir}; fi
 
 # Fasta files to predict
-fasta_dir=/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/GWAS/gkmSVM/snp_fastas
+fasta_dir=/oak/stanford/groups/wjg/boberrey/hairATAC/results/GWAS/gkmSVM/snp_fastas
 snp_fastas=(${fasta_dir}/*snp_seqs*.fasta)
 
 # All previously fit models

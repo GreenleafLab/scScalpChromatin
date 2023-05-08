@@ -27,7 +27,7 @@ source(paste0(scriptPath, "/misc_helpers.R"))
 source(paste0(scriptPath, "/archr_helpers.R"))
 
 # set working directory (The directory of the full preprocessed archr project)
-wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scATAC_preprocessing/fine_clustered"
+wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/scATAC_preprocessing/fine_clustered"
 pics_dir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/analyses/resources/gwas/PICS2"
 fin_dir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/analyses/resources/gwas/finucane_finemapping/release1.1"
 

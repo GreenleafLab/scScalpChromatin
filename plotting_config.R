@@ -845,7 +845,8 @@ volcanoPlot <- function(df, cmap=NULL, cmap_style='qualitative', title=NULL, cov
 
 
 MAPlot <- function(df, cmap=NULL, cmap_style='qualitative', title=NULL, covarLabel="", 
-  namedColors=FALSE, colorColName="color", minxmax=NULL, minymax=NULL, point_size=1){
+  namedColors=FALSE, colorColName="color", minxmax=NULL, minymax=NULL, point_size=1,
+  set_xmin=NULL, set_xmax=NULL, set_ymin=NULL, set_ymax=NULL, border=FALSE){
   # Plot a MA plot of differential genes
   # df is a 2+ column df:
   # col 1 = x axis (e.g. base mean expression)
@@ -886,7 +887,7 @@ MAPlot <- function(df, cmap=NULL, cmap_style='qualitative', title=NULL, covarLab
     + xlab(colnames(df)[1])
     + ylab(colnames(df)[2])
     + ggtitle(title)
-    + theme_BOR(border=FALSE)
+    + theme_BOR(border=border)
     + theme(panel.grid.major=element_blank(), 
             panel.grid.minor=element_blank(), 
             plot.margin=unit(c(0.25,1,0.25,1), "cm"), 
@@ -904,25 +905,40 @@ MAPlot <- function(df, cmap=NULL, cmap_style='qualitative', title=NULL, covarLab
   }else{
     p <- p + scale_color_manual(values=colors, na.value=na_col)
   }
+  # Get current x and y limits
+  xrng <- layer_scales(p)$x$get_limits()
+  xmin <- xrng[1]
+  xmax <- xrng[2]
+  yrng <- layer_scales(p)$y$get_limits()
+  ymin <- yrng[1]
+  ymax <- yrng[2]
+  if(!is.null(set_xmin)){
+    xmin <- set_xmin
+  }
+  if(!is.null(set_xmax)){
+    xmax <- set_xmax
+  }
+  if(!is.null(set_ymin)){
+    ymin <- set_ymin
+  }
+  if(!is.null(set_ymax)){
+    ymax <- set_ymax
+  }
+
   # Enforce x and y lims if indicated
   if(!is.null(minxmax)){
-    xrng <- layer_scales(p)$x$get_limits()
-    xmin <- xrng[1]
-    xmax <- xrng[2]
     xmin <- ifelse(xmin > -minxmax, -minxmax, xmin)
     xmax <- ifelse(xmax < minxmax, minxmax, xmax)
-    p <- p + xlim(xmin, xmax)
   }
   if(!is.null(minymax)){
-    yrng <- layer_scales(p)$y$get_limits()
-    ymin <- yrng[1]
-    ymax <- yrng[2]
     ymin <- ifelse(ymin > -minymax, -minymax, ymin)
     ymax <- ifelse(ymax < minymax, minymax, ymax)
-    suppressMessages(
-      p <- p + scale_y_continuous(expand = c(0, 0), limits=c(ymin*1.05, ymax*1.05))
-    ) 
   }
+  # Reset x and y limits
+  p <- p + xlim(xmin, xmax)
+  suppressMessages(
+    p <- p + scale_y_continuous(expand = c(0, 0), limits=c(ymin*1.05, ymax*1.05))
+  ) 
   p
 }
 

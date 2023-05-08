@@ -18,13 +18,13 @@ ml system gcc
 export PATH=$HOME/git_clones/lsgkm-svr/bin:$PATH
 
 # Get output directory ready
-model_dir=/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/GWAS/gkmSVM/fit_models_1000bp
-full_model_dir=/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/GWAS/gkmSVM/full_models_1000bp
+model_dir=/oak/stanford/groups/wjg/boberrey/hairATAC/results/GWAS/gkmSVM/fit_models_1000bp
+full_model_dir=/oak/stanford/groups/wjg/boberrey/hairATAC/results/GWAS/gkmSVM/full_models_1000bp
 if [ ! -d ${model_dir} ]; then mkdir ${model_dir}; fi
 if [ ! -d ${full_model_dir} ]; then mkdir ${full_model_dir}; fi
 
 # Find all peak categories and fastas
-fasta_dir=/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/GWAS/gkmSVM/fastas_1000bp_randOnly
+fasta_dir=/oak/stanford/groups/wjg/boberrey/hairATAC/results/GWAS/gkmSVM/fastas_1000bp_randOnly
 chr1_true_seq_files=(${fasta_dir}/*chr1_true_seqs.fasta)
 file_basenames=("${chr1_true_seq_files[@]##*/}")
 model_headers=("${file_basenames[@]/_chr1_true_seqs.fasta/}")

@@ -241,7 +241,7 @@ visualizeClustering <- function(proj, pointSize=0.75, prefix="", clusterName="Cl
   p5 <- plotEmbedding(proj, colorBy="cellColData", name="TSSEnrichment", embedding=embedding, plotAs="points", size=pointSize, labelMeans=FALSE)
   p6 <- plotEmbedding(proj, colorBy="cellColData", name="DoubletScore", 
     embedding = embedding, plotAs="points", size=pointSize, labelMeans=FALSE, imputeWeights=getImputeWeights(proj))
-  p7 <- plotEmbedding(proj, colorBy = "cellColData", name = "cellCallUncertainty", 
+  p7 <- plotEmbedding(proj, colorBy = "cellColData", name="cellCallUncertainty", 
     embedding = embedding, plotAs="points", size=pointSize, labelMeans=FALSE, imputeWeights=getImputeWeights(proj))
   ggAlignPlots(p1,p2,p3,p4,p5,p6,p7, type="h")
   plotPDF(p1,p2,p3,p4,p5,p6,p7, name = paste0(prefix,"Plot-UMAP-Sample-Clusters.pdf"), ArchRProj=proj, addDOC=FALSE, width=5, height=5)

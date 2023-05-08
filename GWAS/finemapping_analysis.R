@@ -36,7 +36,7 @@ source(paste0(scriptPath, "/GO_wrappers.R"))
 addArchRThreads(threads = 8)
 
 # set working directory (The directory of the full preprocessed archr project)
-wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scATAC_preprocessing/fine_clustered"
+wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/scATAC_preprocessing/fine_clustered"
 fm_dir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/analyses/resources/gwas/PICS2"
 
 #Set/Create Working Directory to Folder
@@ -50,7 +50,7 @@ topN <- 80 # Number of genes to plot in heatmap
 ##########################################################################################
 
 atac_proj <- loadArchRProject(wd, force=TRUE)
-rna_proj <- readRDS("/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scRNA_preprocessing/preprocessing_output/scalp.rds")
+rna_proj <- readRDS("/oak/stanford/groups/wjg/boberrey/hairATAC/results/scRNA_preprocessing/preprocessing_output/scalp.rds")
 plotDir <- paste0(atac_proj@projectMetadata$outputDirectory, "/Plots")
 
 raw_finemapped_gr <- readRDS(paste0(fm_dir, "/unfiltered_finemapping_genomic_range.rds"))
@@ -117,36 +117,37 @@ getPeakOLpct <- function(full_gr, peaks_gr, breaks=c(0, 0.05, 0.1, 0.25, 1)){
   list(ol_pct=peak_ol_pct, ol_nSNPs=freqs)
 }
 
+# (We will put these in order for matching prior plots)
 disease_traits <- list(
   skin_hair=c(
     "Alopecia areata",  # PICS AA SNPs (from GWC via PICS database)
-    "Male-pattern baldness", # PICS via GWC
-    "Balding_Type4", # Finacune finemapped
-    "Hair color",
-    "Eczema",
-    "Vitiligo",
     "Psoriasis",
+    "Eczema",
     "Cutaneous squamous cell carcinoma",
     "Cutaneous malignant melanoma",
-    "Sunburns"
+    "Vitiligo",
+    "Male-pattern baldness", # PICS via GWC
+    "Balding_Type4", # Finacune finemapped
+    "Sunburns",
+    "Hair color"
   ),
   other_autoimmune=c(
-    "Ulcerative colitis",
-    "Crohn's disease",
     "Asthma",
+    "Crohn's disease",
+    "Systemic lupus erythematosus",
     "Celiac disease",
-    "Systemic lupus erythematosus"
+    "Ulcerative colitis"
   ),
   brain_traits=c(
-    "Major depressive disorder",
-    "Schizophrenia",
     "Parkinson's disease",
-    "Neuroticism",
-    "Educational attainment (years of education)"
+    "Schizophrenia",
+    "Major depressive disorder",
+    "Educational attainment (years of education)",
+    "Neuroticism"
   ),
   other_traits=c(
-    "BMI", # Finacune finemapped
     "Red blood cell count",
+    "BMI", # Finacune finemapped
     "Height",
     "SBP" # Finacune finemapped
   )
@@ -166,7 +167,7 @@ pList <- lapply(all_disease_traits, function(dt){
     ggtitle(dt) + scale_x_discrete(labels=xlabs)
   })
 
-pdf(paste0(plotDir, "/pctPeaksOL_by_fm_probs_eachTrait_ogAA.pdf"), width=5, height=5)
+pdf(paste0(plotDir, "/pctPeaksOL_by_fm_probs_eachTrait.pdf"), width=5, height=5)
 pList
 dev.off()
 
@@ -212,14 +213,14 @@ p <- (
           axis.text.x = element_text(angle = 90, hjust = 1)) 
   + scale_y_continuous(limits=c(0, 0.39), expand = c(0, 0))
 )
-pdf(paste0(plotDir, "/pctPeaksOL_by_fm_probs_ogAA.pdf"), width=10, height=4)
+pdf(paste0(plotDir, "/pctPeaksOL_by_fm_probs.pdf"), width=10, height=4)
 p
 dev.off()
 
 
 # Read in cell type specific peaks
 cts_peak_files <- list.files(
-  path="/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/GWAS/ldsc/FineClust_specific_peaks",
+  path="/oak/stanford/groups/wjg/boberrey/hairATAC/results/GWAS/ldsc/FineClust_specific_peaks",
   pattern="*.bed$",
   full.names=TRUE
 )
@@ -227,7 +228,7 @@ names(cts_peak_files) <- basename(cts_peak_files) %>% sapply(., function(x) gsub
 
 cts_peaks <- lapply(cts_peak_files, function(pf){
   dt <- fread(pf)
-  GRanges(seqnames=dt$V1, IRanges(dt$V2, end=dt$V3))
+  GRanges(seqnames=dt$V1, IRanges(dt$V2+1, end=dt$V3+1))
   })
 names(cts_peaks) <- names(cts_peak_files)
 
@@ -240,11 +241,13 @@ fisherTestSNPs <- function(peaks_gr, snps_gr, disease_trait){
 
   # SNPs overlapping peakset
   nondis_gr <- snps_gr[snps_gr$disease_trait != disease_trait]
+  nondis_gr <- nondis_gr[!duplicated(nondis_gr$linked_SNP)] # remove duplicated SNPs
   nol <- overlapsAny(nondis_gr, peaks_gr) %>% sum() # n non-disease SNPs overlapping
   nnol <- length(nondis_gr) - nol # n non-disease SNPs not overlapping
 
   # Trait SNPs overlapping peakset
-  dis_gr <- snps_gr[snps_gr$disease_trait == disease_trait] 
+  dis_gr <- snps_gr[snps_gr$disease_trait == disease_trait]
+  dis_gr <- dis_gr[!duplicated(dis_gr$linked_SNP)] # remove duplicated SNPs (shouldn't be any)
   dnol <- overlapsAny(dis_gr, peaks_gr) %>% sum() # n disease SNPs overlapping
   dnnol <- length(dis_gr) - dnol # n disease SNPs not overlapping
 
@@ -290,7 +293,7 @@ FatacOrder <- c(
   "aMy4", # "M2.macs_3", 
   "aMy2", # "cDC2_1", # CD1c, CLEC10a (conventional DCs - type 2)
   #"aMy7", # "cDC2_2", 
-  "aMy5", # "CLEC9a.DC", # CLEC9a, CLEC4C, XCR1 https://www.frontiersin.org/articles/10.3389/fimmu.2014.00239/full
+  "aMy5", # "CLEC9a.DC", # CLEC9a, CLEC4C, XCR1
   # Keratinocytes
   "aKc1", # "Basal.Kc_1",
   "aKc2", # "Spinous.Kc_2",
@@ -342,7 +345,8 @@ for(grp in names(disease_traits)){
   plot_df$mlog10padj <- ifelse(plot_df$mlog10padj > max_mlogpval, max_mlogpval, plot_df$mlog10padj)
 
   grp_order <- colnames(wide_df)
-  trait_order <- rownames(wide_df) %>% rev()
+  #trait_order <- rownames(wide_df) %>% rev()
+  trait_order <- disease_traits[[grp]] %>% rev()
 
   pList[[grp]] <- dotPlot(plot_df, xcol="grp", ycol="trait", color_col="mlog10padj", size_col="OR", 
     xorder=unlist(atac.FineClust)[grp_order], yorder=trait_order, 
@@ -350,9 +354,16 @@ for(grp in names(disease_traits)){
     sizeLims=sizeLims, colorLims=colorLims)
 }
 
-pdf(paste0(plotDir, "/fmSNP_enrichment_fisher_clusters_dotPlots_ogAA.pdf"), width=12, height=8)
+pdf(paste0(plotDir, "/fmSNP_enrichment_fisher_clusters_dotPlots.pdf"), width=12, height=8)
 pList
 dev.off()
+
+# Save results table
+save_df <- res_df
+save_df$Lcluster <- unlist(atac.FineClust)[as.character(save_df$cluster)]
+save_df <- save_df[!is.na(save_df$Lcluster),]
+write.table(save_df, file=paste0(wd, "/fmSNP_enrichment_fisher_clusters_results.tsv"), 
+  quote=FALSE, sep="\t", col.names=NA, row.names=TRUE)
 
 rm(raw_finemapped_gr); gc() 
 
@@ -368,9 +379,9 @@ finemapped_GR$trait_snp <- paste0(finemapped_GR$disease_trait, "_", finemapped_G
 finemapped_GR <- finemapped_GR[!duplicated(finemapped_GR$trait_snp)] %>% sort()
 
 # Load full project p2g links, plot loops, etc.
-full_p2gGR <- readRDS(file="/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scATAC_preprocessing/fine_clustered/multilevel_p2gGR.rds") # NOT merged or correlation filtered
-full_coaccessibility <- readRDS(file="/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scATAC_preprocessing/fine_clustered/multilevel_coaccessibility.rds")
-plot_loop_list <- readRDS(file="/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scATAC_preprocessing/fine_clustered/multilevel_plot_loops.rds")
+full_p2gGR <- readRDS(file=paste0(wd, "/multilevel_p2gGR.rds")) # NOT merged or correlation filtered
+full_coaccessibility <- readRDS(file=paste0(wd, "/multilevel_coaccessibility.rds"))
+plot_loop_list <- readRDS(file=paste0(wd, "/multilevel_plot_loops.rds"))
 
 # Get metadata from full project to keep for new p2g links
 originalP2GLinks <- metadata(atac_proj@peakSet)$Peak2GeneLinks
@@ -426,7 +437,7 @@ rnaOrder <- c(
     "rMy3", # "M2.macs_2", # CXCL2, CXCL3, (CCL20?, S100A8/9?) 
     "rMy7", # "TREM2.macs", # TREM2
     "rMy1", # "cDC2", # CD1c, CLEC10a (conventional DCs - type 2)
-    "rMy4", # "CLEC9a.DC", # CLEC9a, CLEC4C, XCR1 https://www.frontiersin.org/articles/10.3389/fimmu.2014.00239/full
+    "rMy4", # "CLEC9a.DC", # CLEC9a, CLEC4C, XCR1 
     # Keratinocytes
     "rKc1", # "Basal.Kc_1",
     "rKc2", # "Spinous.Kc_1",

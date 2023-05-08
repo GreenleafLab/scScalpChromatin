@@ -23,8 +23,8 @@ addArchRThreads(threads = 8)
 
 # set working directory
 subgroup <- "Endothelial"
-wd <- sprintf("/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scATAC_preprocessing/subclustered_%s", subgroup)
-full_dir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scATAC_preprocessing/fine_clustered"
+wd <- sprintf("/oak/stanford/groups/wjg/boberrey/hairATAC/results/scATAC_preprocessing/subclustered_%s", subgroup)
+full_dir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/scATAC_preprocessing/fine_clustered"
 
 #Set/Create Working Directory to Folder
 dir.create(wd, showWarnings = FALSE, recursive = TRUE)
@@ -43,7 +43,7 @@ pointSize <- 1.0
 ##########################################################################################
 
 atac_proj <- loadArchRProject(wd, force=TRUE)
-rna_proj <- readRDS(sprintf("/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scRNA_preprocessing/harmonized_subclustering/%s/%s.rds", subgroup, subgroup))
+rna_proj <- readRDS(sprintf("/oak/stanford/groups/wjg/boberrey/hairATAC/results/scRNA_preprocessing/harmonized_subclustering/%s/%s.rds", subgroup, subgroup))
 
 plotDir <- paste0(atac_proj@projectMetadata$outputDirectory, "/Plots")
 
@@ -53,14 +53,14 @@ atac_sample_cmap <- sample_cmap[names(sample_cmap) %in% unique(atac_proj$Sample2
 disease_cmap <- head(cmaps_BOR$stallion,3)
 names(disease_cmap) <- c("AA", "C_SD", "C_PB")
 
-rna_sub_cmap <- readRDS(sprintf("/home/users/boberrey/git_clones/hairATAC/rna_cmap_%s.rds", subgroup))
-atac_sub_cmap <- readRDS(sprintf("/home/users/boberrey/git_clones/hairATAC/atac_cmap_%s.rds", subgroup))
+rna_sub_cmap <- readRDS(paste0(scriptPath, sprintf("/rna_cmap_%s.rds", subgroup)))
+atac_sub_cmap <- readRDS(paste0(scriptPath, sprintf("/atac_cmap_%s.rds", subgroup)))
 
 ###########################################################################################
 # Do not proceed prior to calling peaks
 ###########################################################################################
 
-# Compute group coverages (do we need to recalculate group coverages on subproject?)
+# Compute group coverages
 atac_proj <- addGroupCoverages(
   ArchRProj=atac_proj, 
   groupBy="FineClust", 

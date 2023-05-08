@@ -36,7 +36,7 @@ rna.NamedClust <- list(
     "rLe1" = "Lymph.Endo",
     "rMe1" = "Melanocytes_1",
     "rMe2" = "Melanocytes_2",
-    "rBc1" = "Plasma",
+    "rBc1" = "Plasma"
 )
 
 rna.FineClust <- list(

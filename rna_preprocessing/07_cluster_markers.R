@@ -30,7 +30,7 @@ source(paste0(scriptPath, "/GO_wrappers.R"))
 # Setup working directory and make a plot dir
 
 #Set/Create Working Directory to Folder
-wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scRNA_preprocessing/preprocessing_output"
+wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/scRNA_preprocessing/preprocessing_output"
 plotDir <- paste0(wd,"/expression_plots_scalp")
 dir.create(wd, showWarnings = FALSE, recursive = TRUE)
 setwd(wd)

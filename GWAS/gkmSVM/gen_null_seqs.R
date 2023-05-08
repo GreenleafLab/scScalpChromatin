@@ -30,8 +30,8 @@ source(paste0(scriptPath, "/archr_helpers.R"))
 source(paste0(scriptPath, "/plotting_config.R"))
 
 # set working directory (The directory of the full preprocessed archr project)
-wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scATAC_preprocessing/fine_clustered"
-outdir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/GWAS/gkmSVM"
+wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/scATAC_preprocessing/fine_clustered"
+outdir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/GWAS/gkmSVM"
 dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
 
 #Set/Create Working Directory to Folder
@@ -226,18 +226,6 @@ cts_peaks <- lapply(cell_types, function(ct){
   })
 names(cts_peaks) <- cell_types
 
-# Get 'BroadClust' peaksets to exclude from downstream selection (i.e. we do not want similar
-# cell type peaks in our negative training set)
-broad_clust <- unique(atac_proj$BroadClust)
-labelHierarchy <- lapply(broad_clust, function(x) names(cts_peaks)[grepl(x, names(cts_peaks))])
-names(labelHierarchy) <- broad_clust
-broad_peaks <- lapply(broad_clust, function(ct){
-  peaks <- getClusterPeaks(atac_proj, clusterNames=labelHierarchy[[ct]], peakGR=peaks_gr)
-  peaks <- resize(peaks, width=peak_width, fix="center") %>% trim_oob() %>% trim_N_seqs(.,genome)
-  peaks
-  })
-names(broad_peaks) <- broad_clust
-
 # Only train models for cell types that have sufficient peaks for model training
 cts_peaks <- cts_peaks[unlist(lapply(cts_peaks, length)) > use_peaks*0.75]
 
@@ -283,7 +271,7 @@ atacOrder <- c(
   "aMy4", # "M2.macs_3", 
   "aMy2", # "cDC2_1", # CD1c, CLEC10a (conventional DCs - type 2)
   #"aMy7", # "cDC2_2", 
-  "aMy5", # "CLEC9a.DC", # CLEC9a, CLEC4C, XCR1 https://www.frontiersin.org/articles/10.3389/fimmu.2014.00239/full
+  "aMy5", # "CLEC9a.DC", # CLEC9a, CLEC4C, XCR1
   # Keratinocytes
   "aKc1", # "Basal.Kc_1",
   "aKc2", # "Spinous.Kc_2",
@@ -325,7 +313,7 @@ LatacOrder <- LatacOrder[LatacOrder %in% colnames(pmat)]
 pmat <- pmat[LatacOrder, LatacOrder]
 
 # Jaccard heatmap
-pdf(paste0(outdir, "/TrainingPeaks_jaccard_index_HM_1000bp_v2.pdf"), width=12, height=12)
+pdf(paste0(outdir, "/TrainingPeaks_jaccard_index_HM_1000bp.pdf"), width=12, height=12)
 ht_opt$simple_anno_size <- unit(0.25, "cm")
 hm <- BORHeatmap(
   pmat,
@@ -351,14 +339,13 @@ dev.off()
 
 # Create full ATAC peak-set from multiple tissue types (can be overlapping, but non-identical)
 all_peaks <- peaks_gr %>% resize(peak_width, fix="center") %>% trim_oob() %>% trim_N_seqs(.,genome)
-all_peaks <- c(all_peaks, brain_peaks, mpal_peaks, tcga_peaks) %>% granges() %>% sort() %>% unique()
+#all_peaks <- c(all_peaks, brain_peaks, mpal_peaks, tcga_peaks) %>% granges() %>% sort() %>% unique()
 
 # Create random peak set
 set.seed(123)
 random_peaks <- getRandomPos(4e6, genome=genome, 
     use_chr=seqlevels(all_peaks), width=peak_width, 
     blacklist_gr=c(masked_gr, all_peaks), non_overlapping=FALSE)
-
 
 # Add GC content to peak sets
 #all_peaks$GC <- gcContent(all_peaks, genome)
@@ -372,7 +359,7 @@ random_peaks <- selectTargetSeqs(all_cts_peaks, targets_gr=random_peaks,
 #####################################################################################
 # Find null seqs for each cell type in parallel
 
-peak_group <- invertList(labelHierarchy)
+#peak_group <- invertList(labelHierarchy)
 
 null_regions <- mclapply(names(cts_peaks), function(x){
 

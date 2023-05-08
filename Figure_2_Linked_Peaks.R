@@ -23,8 +23,8 @@ source(paste0(scriptPath, "/archr_helpers.R"))
 addArchRThreads(threads = 8)
 
 # set working directory (The directory of the full preprocessed archr project)
-wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scATAC_preprocessing/fine_clustered"
-plotDir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scATAC_preprocessing/p2gLink_plots"
+wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/scATAC_preprocessing/fine_clustered"
+plotDir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/scATAC_preprocessing/p2gLink_plots"
 
 #Set/Create Working Directory to Folder
 dir.create(plotDir, showWarnings = FALSE, recursive = TRUE)
@@ -44,7 +44,7 @@ barwidth <- 0.9
 ##########################################################################################
 
 atac_proj <- loadArchRProject(wd, force=TRUE)
-rna_proj_path <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scRNA_preprocessing/preprocessing_output/scalp.rds"
+rna_proj_path <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/scRNA_preprocessing/preprocessing_output/scalp.rds"
 
 # Color Maps
 broadClustCmap <- readRDS(paste0(scriptPath, "/scalpClusterColors.rds")) %>% unlist()
@@ -103,7 +103,7 @@ peak2gene_list[["scalp"]] <- p2gGR
 for(subgroup in subclustered_projects){
   message(sprintf("Reading in subcluster %s", subgroup))
   # Read in subclustered project
-  sub_dir <- sprintf("/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scATAC_preprocessing/subclustered_%s", subgroup)
+  sub_dir <- sprintf("/oak/stanford/groups/wjg/boberrey/hairATAC/results/scATAC_preprocessing/subclustered_%s", subgroup)
   sub_proj <- loadArchRProject(sub_dir, force=TRUE)
 
   # Get sub-project p2g links
@@ -188,7 +188,7 @@ metadata(new_p2g_DF) <- p2gMeta
 metadata(atac_proj@peakSet)$Peak2GeneLinks <- new_p2g_DF
 
 ##########################################################################################
-# Plot some comparisons between linked peaks and 'unlinked' peaks
+# Plot some comparisons between linked peaks and unlinked peaks
 ##########################################################################################
 
 p2gGR <- getP2G_GR(atac_proj, corrCutoff=corrCutoff)
@@ -364,6 +364,15 @@ names(zilch) <- noLinks
 p2gFreqs <- c(p2gFreqs, zilch)
 x <- 1:length(p2gFreqs)
 rank_df <- data.frame(npeaks=p2gFreqs, rank=x)
+
+# Cutoff for defining highly regulated genes (HRGs) determined using elbow rule
+cutoff <- 20
+
+# Save HRGs as table
+hrg_df <- rank_df[rank_df$npeaks > cutoff,]
+hrg_df$gene <- rownames(hrg_df)
+table_dir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/supplemental_tables"
+write.table(hrg_df, file=paste0(table_dir, "/HRG_table.tsv"), quote=FALSE, sep="\t", col.names=NA, row.names=TRUE) 
 
 # Plot barplot of how many linked peaks per gene
 thresh <- 30
@@ -619,9 +628,6 @@ all_top_SEs <- unlist(top_SEs) %>% unique()
 # Label genes as being SE-associated or not
 rank_df$SE <- ifelse(rownames(rank_df) %in% all_top_SEs, 1, 0)
 
-# Cutoff for defining highly regulated genes (HRGs)
-cutoff <- 20
-
 # Hypergeometric enrichment of SE-associated genes in highly-regulated genes
 q <- sum(rank_df[rank_df$npeaks > cutoff,]$SE)  # q = number of white balls drawn without replacement
 m <- length(all_top_SEs)                        # m = number of white balls in urn
@@ -644,6 +650,10 @@ pvals <- sapply(all_sources, function(s){
 # Plot enrichment of SE's from different sources:
 plot_df <- data.frame(rank=1:length(pvals), mlog10padj=-log10(p.adjust(10**-pvals, method="fdr")))
 rownames(plot_df) <- names(pvals)
+
+# Save table
+write.table(plot_df, file=paste0(table_dir, "/SE_enrichment_pval_table.tsv"), quote=FALSE, sep="\t", col.names=NA, row.names=TRUE) 
+
 to_label <- c("BI_CD4p_CD25-_Il17-_PMAstim_Th", "BI_CD4p_CD25-_Il17p_PMAstim_Th17", "CD14", "CD3", "HFSCs_in_vivo", "HFSCs_in_vitro", 
   "TACs_in_vivo", "UCSD_Lung", "BI_Brain_Hippocampus_Middle", "HeLa", "UCSD_Pancreas", "CD34_fetal", "HepG2")
 plot_df$label <- ifelse(rownames(plot_df) %in% to_label, rownames(plot_df), "")

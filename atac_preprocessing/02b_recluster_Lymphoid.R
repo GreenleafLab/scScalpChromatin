@@ -17,13 +17,14 @@ source(paste0(scriptPath, "/plotting_config.R"))
 source(paste0(scriptPath, "/misc_helpers.R"))
 source(paste0(scriptPath, "/matrix_helpers.R"))
 source(paste0(scriptPath, "/archr_helpers.R"))
+source(paste0(scriptPath, "/cluster_labels.R"))
 
 # Set Threads to be used
 addArchRThreads(threads = 8)
 
 # set working directory
 subgroup <- "Lymphoid"
-wd <- sprintf("/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scATAC_preprocessing/subclustered_%s", subgroup)
+wd <- sprintf("/oak/stanford/groups/wjg/boberrey/hairATAC/results/scATAC_preprocessing/subclustered_%s", subgroup)
 
 #Set/Create Working Directory to Folder
 dir.create(wd, showWarnings = FALSE, recursive = TRUE)
@@ -42,7 +43,7 @@ pointSize <- 1.0
 ##########################################################################################
 
 atac_proj <- loadArchRProject(wd, force=TRUE)
-rna_proj <- readRDS(sprintf("/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scRNA_preprocessing/harmonized_subclustering/%s/%s.rds", subgroup, subgroup))
+rna_proj <- readRDS(sprintf("/oak/stanford/groups/wjg/boberrey/hairATAC/results/scRNA_preprocessing/harmonized_subclustering/%s/%s.rds", subgroup, subgroup))
 
 plotDir <- paste0(atac_proj@projectMetadata$outputDirectory, "/Plots")
 
@@ -51,7 +52,7 @@ atac_sample_cmap <- sample_cmap[names(sample_cmap) %in% unique(atac_proj$Sample2
 disease_cmap <- head(cmaps_BOR$stallion,3)
 names(disease_cmap) <- c("AA", "C_SD", "C_PB")
 
-rna_sub_cmap <- readRDS(sprintf("/home/users/boberrey/git_clones/hairATAC/rna_cmap_%s.rds", subgroup))
+rna_sub_cmap <- readRDS(paste0(scriptPath, sprintf("/rna_cmap_%s.rds", subgroup)))
 
 ##########################################################################################
 # Re-cluster subclustered ArchR project
@@ -134,9 +135,6 @@ atac_proj <- addGeneIntegrationMatrix(
 )
 cM <- as.matrix(confusionMatrix(atac_proj$FineClust, atac_proj$FineClust_RNA))
 
-# Load labels from file
-source(paste0(scriptPath, "/cluster_labels.R"))
-
 # rna cmap
 rna_label_cmap <- rna_sub_cmap
 names(rna_label_cmap) <- unlist(rna.FineClust)[names(rna_label_cmap)]
@@ -158,7 +156,7 @@ catchup <- remainingColors[1:length(leftout)]
 names(catchup) <- leftout
 atac_sub_cmap <- c(atac_sub_cmap, catchup)
 
-saveRDS(atac_sub_cmap, file = sprintf("/home/users/boberrey/git_clones/hairATAC/atac_cmap_%s.rds", subgroup))
+saveRDS(atac_sub_cmap, file=paste0(scriptPath, sprintf("/atac_cmap_%s.rds", subgroup)))
 
 atac_label_cmap <- atac_sub_cmap
 names(atac_label_cmap) <- unlist(atac.FineClust)[names(atac_label_cmap)]
@@ -167,7 +165,7 @@ names(atac_label_cmap) <- unlist(atac.FineClust)[names(atac_label_cmap)]
 atac_proj$LabelClust <- unlist(atac.FineClust)[atac_proj$FineClust]
 atac_proj$LabelClust_RNA <- unlist(rna.FineClust)[atac_proj$FineClust_RNA]
 
-# How did we do?:
+# Plot confusion matrix heatmap
 cM <- as.matrix(confusionMatrix(atac_proj$LabelClust, atac_proj$LabelClust_RNA))
 
 new_cM <- cM
@@ -179,14 +177,47 @@ for(i in 1:nrow(cM)){
 cM <- new_cM
 cM <- prettyOrderMat(t(cM),clusterCols=TRUE)$mat %>% t()
 
-pdf(paste0(plotDir, "/ATAC-RNA-integration-cM-heatmap.pdf"), width=6, height=6)
+# Read in colormaps
+rna_sub_cmap <- readRDS(paste0(scriptPath, sprintf("/rna_cmap_%s.rds", subgroup)))
+rna_label_cmap <- rna_sub_cmap
+names(rna_label_cmap) <- unlist(rna.FineClust)[names(rna_label_cmap)]
+atac_sub_cmap <- readRDS(paste0(scriptPath, sprintf("/atac_cmap_%s.rds", subgroup)))
+atac_label_cmap <- atac_sub_cmap
+names(atac_label_cmap) <- unlist(atac.FineClust)[names(atac_label_cmap)]
+
+rna_order <- c(
+  "Treg",
+  "CD8_Tc_1",
+  "NK",
+  "CD4.Tc_1",
+  "CD4.Tc_2"
+)
+atac_order <- c(
+  "Treg",
+  "CD8.Tc",
+  "CD4.Tc_1",
+  "CD4.Tc_2",
+  "CD4.Tc_3"
+)
+cM <- cM[atac_order, rna_order]
+
+atac_label_cmap <- atac_label_cmap[names(atac_label_cmap) %in% rownames(cM)]
+rna_label_cmap <- rna_label_cmap[names(rna_label_cmap) %in% colnames(cM)]
+
+pdf(paste0(plotDir, sprintf("/ATAC-RNA-integration-cM-heatmap-%s.pdf", subgroup)), width=6, height=6)
 ht_opt$simple_anno_size <- unit(0.25, "cm")
+ra <- HeatmapAnnotation(atac_cluster=rownames(cM),col=list(atac_cluster=atac_label_cmap), 
+  which="row", show_legend=c("atac_cluster"=FALSE))
+ta <- HeatmapAnnotation(rna_cluster=colnames(cM),col=list(rna_cluster=rna_label_cmap), 
+  show_legend=c("rna_cluster"=FALSE))
 hm <- BORHeatmap(
   cM, 
   limits=c(0,1), 
   clusterCols=FALSE, clusterRows=FALSE,
   labelCols=TRUE, labelRows=TRUE,
   dataColors = cmaps_BOR$whitePurple,
+  left_annotation = ra,
+  top_annotation = ta,
   row_names_side = "left",
   width = ncol(cM)*unit(0.5, "cm"),
   height = nrow(cM)*unit(0.5, "cm"),

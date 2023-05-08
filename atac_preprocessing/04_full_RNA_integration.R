@@ -22,7 +22,7 @@ source(paste0(scriptPath, "/archr_helpers.R"))
 addArchRThreads(threads = 8)
 
 # set working directory (The directory of the full preprocessed archr project)
-wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scATAC_preprocessing/fine_clustered"
+wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/scATAC_preprocessing/fine_clustered"
 
 #Set/Create Working Directory to Folder
 dir.create(wd, showWarnings = FALSE, recursive = TRUE)
@@ -42,7 +42,7 @@ barwidth <- 0.9
 ##########################################################################################
 
 atac_proj <- loadArchRProject(wd, force=TRUE)
-rna_proj <- readRDS("/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scRNA_preprocessing/preprocessing_output/scalp.rds")
+rna_proj <- readRDS("/oak/stanford/groups/wjg/boberrey/hairATAC/results/scRNA_preprocessing/preprocessing_output/scalp.rds")
 plotDir <- paste0(atac_proj@projectMetadata$outputDirectory, "/Plots")
 
 # Color Maps

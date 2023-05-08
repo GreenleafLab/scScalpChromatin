@@ -8,7 +8,10 @@
 set -o errexit 
 
 # Source config file
-source ${HOME}/git_clones/scScalpChromatin/GWAS_scripts/LDSC/00_ldsc_config.conf
+source ${HOME}/git_clones/scScalpChromatin/GWAS/LDSC/00_ldsc_config.conf
+
+# Make results directory if it doesn't already exist
+if [ ! -d ${wd} ]; then mkdir ${wd}; fi
 
 # Download baseline LD scores:
 if [ ! -d "${baseline_dir}" ]
@@ -90,7 +93,7 @@ then
     logfile=${cts_peak_dir}/get_cell_type_peaks.out
     sbatch -p wjg,biochem,sfgf -t 00:20:00 --mem=50G --cpus-per-task=8 \
     --job-name=ctspeaks --output=${logfile} --error=${logfile} \
-    --wrap "Rscript ${HOME}/git_clones/hairATAC/GWAS_scripts/LDSC/get_cell_type_peaks.R ${peakClass} ${archrPath} ${wd}"
+    --wrap "Rscript ${HOME}/git_clones/scScalpChromatin/GWAS/LDSC/get_cell_type_peaks.R ${peakClass} ${archrPath} ${wd}"
 else
     echo "cell type-specific peaks already present..."
 fi

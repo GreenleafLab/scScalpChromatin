@@ -22,7 +22,7 @@ source(paste0(scriptPath, "/archr_helpers.R"))
 addArchRThreads(threads = 8)
 
 # set working directory (The directory of the full preprocessed archr project)
-wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scATAC_preprocessing/fine_clustered"
+wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/scATAC_preprocessing/fine_clustered"
 
 #Set/Create Working Directory to Folder
 dir.create(wd, showWarnings = FALSE, recursive = TRUE)
@@ -39,7 +39,7 @@ genomeAnno <- genomeAnnoHg38
 ##########################################################################################
 
 atac_proj <- loadArchRProject(wd, force=TRUE)
-rna_proj <- readRDS("/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scRNA_preprocessing/preprocessing_output/scalp.rds")
+rna_proj <- readRDS("/oak/stanford/groups/wjg/boberrey/hairATAC/results/scRNA_preprocessing/preprocessing_output/scalp.rds")
 plotDir <- paste0(atac_proj@projectMetadata$outputDirectory, "/Plots")
 
 # Color Maps
@@ -252,7 +252,7 @@ FrnaOrder <- c(
     "rMy3", # "M2.macs_2", # CXCL2, CXCL3, (CCL20, S100A8/9) 
     "rMy7", # "TREM2.macs", # TREM2
     "rMy1", # "cDC2", # CD1c, CLEC10a (conventional DCs - type 2)
-    "rMy4", # "CLEC9a.DC", # CLEC9a, CLEC4C, XCR1 https://www.frontiersin.org/articles/10.3389/fimmu.2014.00239/full
+    "rMy4", # "CLEC9a.DC", # CLEC9a, CLEC4C, XCR1
     # Keratinocytes
     "rKc1", # "Basal.Kc_1",
     "rKc2", # "Spinous.Kc_1",
@@ -306,7 +306,7 @@ FatacOrder <- c(
     "aMy4", # "M2.macs_3", # CXCL8 
     "aMy2", # "cDC2_1", # CD1c, CLEC10a (conventional DCs - type 2)
     "aMy7", # "cDC2_2", # IL15, IL32, CCR7 (CCL19, CCL17)
-    "aMy5", # "CLEC9a.DC", # CLEC9a, CLEC4C, XCR1 https://www.frontiersin.org/articles/10.3389/fimmu.2014.00239/full
+    "aMy5", # "CLEC9a.DC", # CLEC9a, CLEC4C, XCR1
     # Keratinocytes
     "aKc1", # "Basal.Kc_1",
     "aKc2", # "Spinous.Kc_2",

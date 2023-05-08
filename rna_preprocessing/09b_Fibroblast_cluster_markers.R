@@ -30,7 +30,7 @@ source(paste0(scriptPath, "/GO_wrappers.R"))
 # Setup working directory and make a plot dir
 
 #Set/Create Working Directory to Folder
-wd <- sprintf("/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scRNA_preprocessing/harmonized_subclustering/%s", subgroup)
+wd <- sprintf("/oak/stanford/groups/wjg/boberrey/hairATAC/results/scRNA_preprocessing/harmonized_subclustering/%s", subgroup)
 plotDir <- paste0(wd,"/expression_plots")
 dir.create(wd, showWarnings = FALSE, recursive = TRUE)
 setwd(wd)
@@ -120,10 +120,8 @@ hla_genes <- grep(pattern = "^HLA-", x = colnames(expr), value = TRUE)
 
 featureSets <- list(
     "Fibroblasts" = c("THY1", "COL1A1", "COL1A2", "COL3A1", "DCN", "MGP", "COL6A2", "CEBPB", "APOD", "CFD"),
-    "HF_associated" = c("APCDD1", "VCAN", "CORIN", "PTGDS", "SOX2", "COL11A1"), # Dermal Sheath? Hard to find clearly defined markers...
+    "HF_associated" = c("APCDD1", "VCAN", "CORIN", "PTGDS", "SOX2", "COL11A1"), # Dermal Sheath
     "ImmuneRecruiting" = c("CXCL1", "CXCL2", "CXCL14", "CD44"),
-    "AAdiff" = c("VEGFA", "CTGF", "FGF7", "OSMR"),
-    "TGFBeta" = c("TGFB1", "TGFBR1", "TGFBR2", "TGFBR3", "SMAD1", "SMAD3", "SMAD4", "SMAD7", "ID1", "ID2", "ID3", "ID4"),
     "Papillary_dermis" = c("COL6A5", "APCDD1", "HSPB3", "WIF1", "ENTPD1"), # PMID: 29391249
     "Reticular_dermis" = c("CD36"),
     "Dermal_Papilla" = c("WNT5A", "BMP4", "BMP7", "HHIP", "PTCH1", "SOX18", "RUNX1", "RUNX3", "ALX4")
@@ -185,7 +183,7 @@ dev.off()
 fineclust_cmap <- cmaps_BOR$stallion[1:length(fineClust)]
 names(fineclust_cmap) <- names(getFreqs(obj$FineClust))
 # Save color palette for 'NamedClust'
-saveRDS(fineclust_cmap, file = sprintf("/home/users/boberrey/git_clones/hairATAC/rna_cmap_%s.rds", subgroup))
+saveRDS(fineclust_cmap, file = paste0(scriptPath, sprintf("/rna_cmap_%s.rds", subgroup)))
 
 ### Cluster UMAP ###
 umapDF <- data.frame(Embeddings(object = obj, reduction = "umap"), obj$FineClust)

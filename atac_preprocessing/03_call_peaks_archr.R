@@ -24,10 +24,10 @@ source(paste0(scriptPath, "/matrix_helpers.R"))
 addArchRThreads(threads = 8)
 
 # Working directory
-wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scATAC_preprocessing/baseline_preprocessing/multiplets_removed_output"
+wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/scATAC_preprocessing/baseline_preprocessing/multiplets_removed_output"
 
 # New directory
-outdir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scATAC_preprocessing/fine_clustered"
+outdir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/scATAC_preprocessing/fine_clustered"
 dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
 setwd(outdir)
 
@@ -70,7 +70,7 @@ unlink(paste0(outdir, "/*_filtered_barcodes.txt"), recursive = TRUE)
 
 atac_proj <- loadArchRProject(outdir, force=TRUE)
 # color palettes
-sample_cmap <- readRDS("/home/users/boberrey/git_clones/hairATAC/sample_cmap.rds")
+sample_cmap <- readRDS(paste0(scriptPath, "/sample_cmap.rds"))
 sample_cmap <- sample_cmap[names(sample_cmap) %in% unique(atac_proj$Sample2)] %>% unlist()
 atacNamedClustCmap <- readRDS(paste0(scriptPath, "/scATAC_NamedClust_cmap.rds")) %>% unlist()
 
@@ -82,7 +82,7 @@ names(FineClustLabels) <- getCellNames(atac_proj)
 for(subgroup in subclustered_projects){
     message(sprintf("Reading in subcluster %s", subgroup))
     # Read in subclustered project
-    sub_dir <- sprintf("/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scATAC_preprocessing/subclustered_%s", subgroup)
+    sub_dir <- sprintf("/oak/stanford/groups/wjg/boberrey/hairATAC/results/scATAC_preprocessing/subclustered_%s", subgroup)
     sub_proj <- loadArchRProject(sub_dir, force=TRUE)
 
     # Add FineClust to full ArchR project
@@ -117,7 +117,6 @@ atac_proj <- addGroupCoverages(
   )
 
 # Find Path to Macs2 binary
-# ***NOTE***: Use condaMacs2 conda environment to ensure correct macs2 path
 pathToMacs2 <- findMacs2()
 
 # Call Reproducible Peaks w/ Macs2
@@ -136,56 +135,3 @@ atac_proj <- addPeakMatrix(ArchRProj = atac_proj, force = TRUE)
 saveArchRProject(atac_proj)
 
 ##########################################################################################
-
-
-
-
-
-# # Add Motif Peak Annotations (Takes some time)
-# atac_proj <- addMotifAnnotations(ArchRProj = atac_proj, motifSet = "cisbp", name = "Motif", force = TRUE)
-
-# # Add background peaks
-# atac_proj <- addBgdPeaks(atac_proj)
-
-# # (WARNING: kind of slow, 20+ minutes)
-# atac_proj <- addDeviationsMatrix(
-#   ArchRProj = atac_proj, 
-#   peakAnnotation = "Motif",
-#   force = TRUE
-# )
-
-
-# # Plot the FRIP/TSS per sample/cluster:
-# plotList <- list()
-# plotList[[1]] <- plotGroups(
-#   ArchRProj = atac_proj, 
-#   groupBy = "Sample2", 
-#   colorBy = "colData", 
-#   name = "FRIP",
-#   pal = sample_cmap
-# )
-# plotList[[2]] <- plotGroups(
-#   ArchRProj = atac_proj, 
-#   groupBy = "FineClust", 
-#   colorBy = "colData", 
-#   name = "FRIP",
-#   ratioYX = 2
-# )
-# plotList[[3]] <- plotGroups(
-#   ArchRProj = atac_proj, 
-#   groupBy = "Sample2", 
-#   colorBy = "colData", 
-#   name = "TSSEnrichment",
-#   pal = sample_cmap
-# )
-# plotList[[4]] <- plotGroups(
-#   ArchRProj = atac_proj, 
-#   groupBy = "FineClust", 
-#   colorBy = "colData", 
-#   name = "TSSEnrichment",
-#   ratioYX = 2
-# )
-# plotPDF(plotList = plotList, name = "FRIP-TSS-Enrichment", width = 4, height = 4,  ArchRProj = atac_proj, addDOC = FALSE)
-
-
-# #############################################################################

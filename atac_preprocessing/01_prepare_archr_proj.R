@@ -24,7 +24,7 @@ source(paste0(scriptPath, "/sample_metadata.R"))
 addArchRThreads(threads = 10)
 
 # set working directory
-wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scATAC_preprocessing/baseline_preprocessing"
+wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/scATAC_preprocessing/baseline_preprocessing"
 
 # color palettes
 sample_cmap <- readRDS("/home/users/boberrey/git_clones/hairATAC/sample_cmap.rds")
@@ -163,7 +163,6 @@ for(samp in samples){
     p <- p + geom_hline(yintercept = minTSS, lty = "dashed") + geom_vline(xintercept = log10(1000), lty = "dashed")
     plotPDF(p, name = paste0(samp,"_EM_model_filtered_cells_TSS-vs-Frags.pdf"), ArchRProj = proj, addDOC = FALSE)
 }
-
 
 # Now, filter ATAC project to contain only cells
 finalCellCalls <- lapply(cellResults, function(x) x$results) %>% do.call(rbind, .)
@@ -336,6 +335,7 @@ hm <- ComplexHeatmap::draw(heatmapGS, heatmap_legend_side = "bot", annotation_le
 
 plotPDF(hm, name = "filtered-GeneScores-Marker-Heatmap", width = 6, height = 10, ArchRProj = proj, addDOC = FALSE)
 
+# Remove clusters that have poor quality (enriched for high doublet score cells, poor cell quality, incompatible marker gene scores, etc.)
 nonMultipletCells <- getCellNames(proj)[proj$Clusters %ni% c("C7", "C13", "C15", "C18")]
 
 proj <- subsetArchRProject(

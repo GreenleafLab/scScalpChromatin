@@ -36,7 +36,7 @@ umapMinDist <- 0.5
 umapDistMetric <- "cosine"
 
 #Set/Create Working Directory to Folder
-wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scRNA_preprocessing/preprocessing_output"
+wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/scRNA_preprocessing/preprocessing_output"
 dir.create(wd, showWarnings = FALSE, recursive = TRUE)
 setwd(wd)
 
@@ -138,7 +138,8 @@ for(i in seq_along(resolution)){
     clusters <- Idents(obj)
     #Store information
     lsiOut[[reducName]] <- list(
-        lsiMat = LSIi$matSVD, 
+        lsiMat = LSIi$matSVD,
+        svd = LSIi$svd,
         varFeatures = varGenes, 
         clusters = clusters
     )

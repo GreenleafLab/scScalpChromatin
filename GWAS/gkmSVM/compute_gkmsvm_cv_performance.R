@@ -19,13 +19,14 @@ suppressPackageStartupMessages({
 })
 
 # Get additional functions, etc.:
-scriptPath <- "/home/users/boberrey/git_clones/hairATAC"
+scriptPath <- "/home/users/boberrey/git_clones/scScalpChromatin"
 source(paste0(scriptPath, "/misc_helpers.R"))
 source(paste0(scriptPath, "/plotting_config.R"))
 
 # Read in cross validation results from gkmSVM train
-resultDir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/GWAS/gkmSVM/model_predictions"
-plotDir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/GWAS/gkmSVM"
+resultDir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/GWAS/gkmSVM/model_predictions"
+plotDir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/GWAS/gkmSVM"
+atac_dir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/scATAC_preprocessing/fine_clustered"
 
 # Use capture group to get only files that predict their own cell type
 res_files <- list.files(
@@ -39,7 +40,6 @@ clusters <- str_replace(basename(res_files), "\\.fold[0-9]+\\..*\\.txt$", "")
 fold <- str_extract(basename(res_files), "\\.fold[0-9]+\\.") %>% str_extract(.,"[0-9]+") %>% as.numeric()
 truenull <- str_match(basename(res_files), "\\.(true|null)\\.txt$")[,2]
 meta_df <- data.frame(cluster=clusters, fold=fold, type=truenull, res_file=res_files)
-
 
 # Calculate AUROC and AUPRC for each prediction:
 getPerformancefromFiles <- function(types, files){
@@ -61,7 +61,7 @@ summary_df <- meta_df %>% group_by(cluster, fold) %>% do(getPerformancefromFiles
 
 # Translate to labeled clusters
 source(paste0(scriptPath, "/cluster_labels.R"))
-summary_df$Lcluster <- unlist(atac.NamedClust)[summary_df$cluster]
+summary_df$Lcluster <- unlist(atac.FineClust)[summary_df$cluster]
 
 # Specify order of clusters (Fine Clust)
 atacOrder <- c(
@@ -80,7 +80,7 @@ atacOrder <- c(
   "aMy4", # "M2.macs_3", 
   "aMy2", # "cDC2_1", # CD1c, CLEC10a (conventional DCs - type 2)
   #"aMy7", # "cDC2_2", 
-  "aMy5", # "CLEC9a.DC", # CLEC9a, CLEC4C, XCR1 https://www.frontiersin.org/articles/10.3389/fimmu.2014.00239/full
+  "aMy5", # "CLEC9a.DC", # CLEC9a, CLEC4C, XCR1
   # Keratinocytes
   "aKc1", # "Basal.Kc_1",
   "aKc2", # "Spinous.Kc_2",
@@ -117,7 +117,7 @@ summary_df <- summary_df[summary_df$Lcluster %in% LatacOrder,]
 
 # Map FineClust colors to NamedClust
 library(ArchR)
-atac_proj <- loadArchRProject("/scratch/groups/wjg/boberrey/hairATAC/analyses/scATAC_preprocessing/fine_clustered", force=TRUE)
+atac_proj <- loadArchRProject(atac_dir, force=TRUE)
 cM <- as.matrix(confusionMatrix(atac_proj$FineClust, atac_proj$NamedClust))
 allFineClust <- unique(atac_proj$FineClust)
 map_colors <- apply(cM, 1, function(x)colnames(cM)[which.max(x)])
@@ -135,7 +135,7 @@ p <- (
   + geom_boxplot(alpha=0.5, outlier.shape=NA) # Hide fliers (we show them with geom_jitter)
   + geom_jitter(aes(group=cluster), size=0.75, color="black",
      position=position_jitterdodge(seed=1, jitter.width=7.0, jitter.height=0.0, dodge.width=dodge_width))
-  + scale_y_continuous(limits=c(0.5,1.0), expand=c(0,0))
+  + scale_y_continuous(limits=c(0.75,1.0), expand=c(0,0))
   + scale_color_manual(values=cmap)
   + scale_fill_manual(values=cmap)
   + xlab("")
@@ -148,7 +148,7 @@ p <- (
           axis.text.x = element_text(angle=90, hjust=1)) 
 )
 
-pdf(paste0(plotDir, "/cv_AUROC_boxplot_1000bpNC_fullLim.pdf"), width=8, height=6)
+pdf(paste0(plotDir, "/cv_AUROC_boxplot_1000bp.pdf"), width=8, height=6)
 p
 dev.off()
 
@@ -158,7 +158,7 @@ p <- (
   + geom_boxplot(alpha=0.5, outlier.shape=NA) # Hide fliers (we show them with geom_jitter)
   + geom_jitter(aes(group=cluster), size=0.75, color="black",
      position=position_jitterdodge(seed=1, jitter.width=7.0, jitter.height=0.0, dodge.width=dodge_width))
-  + scale_y_continuous(limits=c(0.5,1.0), expand=c(0,0))
+  + scale_y_continuous(limits=c(0.75,1.0), expand=c(0,0))
   + scale_color_manual(values = cmap)
   + scale_fill_manual(values = cmap)
   + xlab("")
@@ -171,7 +171,7 @@ p <- (
           axis.text.x = element_text(angle=90, hjust=1)) 
 )
 
-pdf(paste0(plotDir, "/cv_AUPRC_boxplot_1000bpNC_fullLim.pdf"), width=8, height=6)
+pdf(paste0(plotDir, "/cv_AUPRC_boxplot_1000bp.pdf"), width=8, height=6)
 p
 dev.off()
 

@@ -29,7 +29,7 @@ source(paste0(scriptPath, "/matrix_helpers.R"))
 # Setup working directory and make a plot dir
 
 #Set/Create Working Directory to Folder
-wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scRNA_preprocessing/preprocessing_output"
+wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/scRNA_preprocessing/preprocessing_output"
 plotDir <- paste0(wd,"/expression_plots")
 dir.create(wd, showWarnings = FALSE, recursive = TRUE)
 setwd(wd)
@@ -136,7 +136,3 @@ gene_order <- rev(rownames(wide_df$mat))
 pdf(paste0(plotDir, "/markers_dot_plot_preclustered.pdf"), width=6, height=10)
 dotPlot(avgPctMat, xcol="grp", ycol="feature", color_col="avgExpr", size_col="pctExpr", xorder=grp_order, yorder=gene_order, cmap=cmaps_BOR$sunrise)
 dev.off()
-
-
-
-

@@ -24,8 +24,8 @@ source(paste0(scriptPath, "/archr_helpers.R"))
 addArchRThreads(threads = 8)
 
 # set working directory (The directory of the full preprocessed archr project)
-wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scATAC_preprocessing/fine_clustered"
-plotDir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scATAC_preprocessing/p2gLink_plots"
+wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/scATAC_preprocessing/fine_clustered"
+plotDir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/scATAC_preprocessing/p2gLink_plots"
 
 #Set/Create Working Directory to Folder
 dir.create(plotDir, showWarnings = FALSE, recursive = TRUE)
@@ -45,9 +45,6 @@ barwidth <- 0.9
 ##########################################################################################
 
 atac_proj <- loadArchRProject(wd, force=TRUE)
-# (We don't do much with the RNA at this stage, so don't need to load the entire Seurat object)
-#rna_proj_path <- "/scratch/groups/wjg/boberrey/hairATAC/analyses/scRNA_preprocessing/preprocessing_output/scalp.rds"
-rna_proj_path <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scRNA_preprocessing/preprocessing_output/scalp.rds"
 
 # Color Maps
 broadClustCmap <- readRDS(paste0(scriptPath, "/scalpClusterColors.rds")) %>% unlist()
@@ -74,9 +71,6 @@ names(disease_cmap) <- c("AA", "C_SD", "C_PB")
 corrCutoff <- 0.5       # Default in plotPeak2GeneHeatmap is 0.45
 varCutoffATAC <- 0.25   # Default in plotPeak2GeneHeatmap is 0.25
 varCutoffRNA <- 0.25    # Default in plotPeak2GeneHeatmap is 0.25
-
-# Coaccessibility cutoffs
-coAccCorrCutoff <- 0.4  # Default in getCoAccessibility is 0.5
 
 # Get all peaks
 allPeaksGR <- getPeakSet(atac_proj)
@@ -215,6 +209,11 @@ p2gGInt <- convertP2GtoGInt(getP2G_GR(atac_proj, corrCutoff=corrCutoff), promote
 
 # All possible p2g links GInteraction
 all_p2gGR <- getP2G_GR(atac_proj, corrCutoff=NULL, varCutoffATAC=-Inf, varCutoffRNA=-Inf, filtNA=FALSE)
+all_p2gGInt <- convertP2GtoGInt(all_p2gGR, promoterGR)
+
+# ABC model GInteraction
+abc_GInt <- convertP2GtoGInt(abc_gr, promoterGR)
+
 p2gGInt$pdist <- pairdist(p2gGInt, type="mid")
 all_p2gGInt$pdist <- pairdist(all_p2gGInt, type="mid")
 
@@ -267,3 +266,63 @@ ol_df$group <- factor(ol_df$group, levels=names(ol_res), ordered=TRUE)
 pdf(paste0(plotDir, "/fracOL_p2g_ABC_model.pdf"), width=8, height=6)
 qcBarPlot(ol_df, cmap="royalblue1", barwidth=0.9, border_color=NA)
 dev.off()
+
+###################################################################################################
+# Calculate p-value for enrichment of ABC model overlaps using one-sided Fisher's exact tests
+###################################################################################################
+
+# Construct peak-to-gene interaction obects to test for pair-wise overlaps and calculate distances, etc.
+# (First, get all possible peak-to-gene comparisons to use as background)
+all_p2gGR <- getP2G_GR(atac_proj, corrCutoff=NULL, varCutoffATAC=-Inf, varCutoffRNA=-Inf, filtNA=FALSE)
+all_p2gGR$p2gID <- paste0(all_p2gGR$peakName, "_", all_p2gGR$symbol)
+all_p2gGInt <- convertP2GtoGInt(all_p2gGR, promoterGR)
+all_p2gGInt$pdist <- pairdist(all_p2gGInt, type="mid")
+
+# Remove valid peak-to-gene linkages from background set (For Odds ratio / Fisher's exact test)
+all_p2gGR <- all_p2gGR[all_p2gGR$p2gID %ni% filt_full_p2gGR$p2gID]
+
+exp_subsets <- c("full_dataset", subsets)
+
+olap_pvals <- sapply(exp_subsets, function(ss){
+  message(sprintf("Calculating enrichment for subset %s...", ss))
+  set.seed(1)
+  if(ss == "full_dataset"){
+    sub_P2G <- getP2G_GR(atac_proj, corrCutoff=corrCutoff)
+  }else{
+    sub_P2G <- filt_full_p2gGR[filt_full_p2gGR$source == ss]
+  }
+  sub_P2GInt <- convertP2GtoGInt(sub_P2G, promoterGR)
+
+  # Add pair-distances so we can select distance-matched background
+  sub_P2GInt$pdist <- pairdist(sub_P2GInt, type="mid")
+
+  # Sample distance-matched background peaks
+  samp_p2gGInt <- all_p2gGInt[sampleMatchDist(all_p2gGInt$pdist, sub_P2GInt$pdist, size=length(sub_P2GInt))] %>% sort()
+
+  olap <- sub_P2GInt[overlapsAny(sub_P2GInt, abc_GInt, 
+    type="any", ignore.strand=TRUE)]
+
+  unfilt_olap <- samp_p2gGInt[overlapsAny(samp_p2gGInt, abc_GInt, 
+    type="any", ignore.strand=TRUE)]
+
+  length(olap)/length(p2gGInt)
+  length(unfilt_olap)/length(samp_p2gGInt)
+
+  dnol <- length(olap) # Number of peak-to-gene links that overlap an ABC-model prediction
+  dnnol <- length(sub_P2GInt) - dnol # Number of peak-to-gene links that do not overlap an ABC-model prediction
+  nol <- length(unfilt_olap) # Number of non peak-to-gene links that overlap an ABC-model prediction
+  nnol <- length(samp_p2gGInt) - nol # Number of non peak-to-gene links that do not overlap an ABC model prediction
+  OR <- (dnol/dnnol)/(nol/nnol) # Odds ratio
+  pval <- fisher.test(matrix(c(dnol, dnnol, nol, nnol),2,2), alternative="greater")$p.value
+  c(OR=OR, pval=pval)
+}) %>% t()
+
+# full_dataset OR = 1.86, p-value ~ 0 (too low to be calculated)
+# Scalp (non-subclustered) OR = 1.97, p-value ~ 0 (too low to be calculated)
+# Keratinocytes OR = 1.59, p-value = 1.02e-105
+# Fibroblasts OR = 1.81, p-value = 3.71e-92
+# Endothelial OR = 2.18, p-value ~ 0 (too low to be calculated)
+# T-lymphocytes OR = 2.30, p-value = 1.54e-126
+# Myeloid OR = 1.92, p-value ~ 0 (too low to be calculated)
+
+###################################################################################################

@@ -36,7 +36,7 @@ umapMinDist <- 0.5
 umapDistMetric <- "cosine"
 
 #Set/Create Working Directory to Folder
-wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scRNA_preprocessing/preprocessing_output"
+wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/scRNA_preprocessing/preprocessing_output"
 dir.create(wd, showWarnings = FALSE, recursive = TRUE)
 setwd(wd)
 
@@ -140,7 +140,8 @@ for(i in seq_along(resolution)){
     clusters <- Idents(obj)
     #Store information
     lsiOut[[reducName]] <- list(
-        lsiMat = LSIi$matSVD, 
+        lsiMat = LSIi$matSVD,
+        svd = LSIi$svd,
         varFeatures = varGenes, 
         clusters = clusters
     )
@@ -168,14 +169,12 @@ obj <- RunUMAP(
 message("Saving seurat object...")
 
 # Save clustered object here:
-saveRDS(obj, file = paste0(wd, "/scalp.rds"))
+saveRDS(obj, file = paste0(wd, "/scalp2.rds"))
 
 # Save iterativeLSI info
-saveRDS(lsiOut, file = paste0(wd, "/lsiOut_scalp.rds"))
+saveRDS(lsiOut, file = paste0(wd, "/lsiOut_scalp2.rds"))
 
 message("Done.")
 
 # Close connections
 on.exit({ sink(type = "message"); sink(type = "output"); close(con) })
-
-

@@ -20,7 +20,7 @@ suppressPackageStartupMessages({
 #### Parameters ####
 
 # Set/Create Working Directory to Folder:
-wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scRNA_preprocessing/harmonized_subclustering"
+wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/scRNA_preprocessing/harmonized_subclustering"
 setwd(wd)
 
 # Subgroups to subcluster:
@@ -116,7 +116,7 @@ source(paste0(scriptPath, "/misc_helpers.R"))
 source(paste0(scriptPath, "/matrix_helpers.R"))
 
 # color palettes
-sample_cmap <- readRDS("/home/users/boberrey/git_clones/hairATAC/sample_cmap.rds")
+sample_cmap <- readRDS("/home/users/boberrey/git_clones/scScalpChromatin/sample_cmap.rds")
 disease_cmap <- head(cmaps_BOR$stallion, 3)
 names(disease_cmap) <- c("AA", "C_SD", "C_PB") 
 
@@ -241,7 +241,8 @@ for(sg in subgroups){
       clusters <- Idents(obj)
       #Store information
       lsiOut[[reducName]] <- list(
-          lsiMat = LSIi$matSVD, 
+          lsiMat = LSIi$matSVD,
+          svd = LSIi$svd,
           varFeatures = varGenes, 
           clusters = clusters
       )

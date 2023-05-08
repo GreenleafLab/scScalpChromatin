@@ -25,7 +25,7 @@ broadClustCmap <- readRDS(paste0(scriptPath, "scalpClusterColors.rds")) %>% unli
 atacNamedClustCmap <- readRDS(paste0(scriptPath, "scATAC_NamedClust_cmap.rds")) %>% unlist()
 
 # Identify all result files
-resultDir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/GWAS/ldsc/FineClust_h2_results"
+resultDir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/GWAS/ldsc/FineClust_h2_results"
 setwd(resultDir)
 resultFiles <- list.files(path=resultDir, pattern=".results$", full.names=TRUE)
 
@@ -69,7 +69,7 @@ atacOrder <- c(
   "aMy4", # "M2.macs_3", 
   "aMy2", # "cDC2_1", # CD1c, CLEC10a (conventional DCs - type 2)
   #"aMy7", # "cDC2_2", 
-  "aMy5", # "CLEC9a.DC", # CLEC9a, CLEC4C, XCR1 https://www.frontiersin.org/articles/10.3389/fimmu.2014.00239/full
+  "aMy5", # "CLEC9a.DC", # CLEC9a, CLEC4C, XCR1
   # Keratinocytes
   "aKc1", # "Basal.Kc_1",
   "aKc2", # "Spinous.Kc_2",
@@ -104,6 +104,10 @@ atacOrder <- c(
 source(paste0(scriptPath, "/cluster_labels.R"))
 results$LCategory <- unlist(atac.FineClust)[results$Category]
 
+# Save copy of results
+write.table(results, file=paste0(resultDir, "/FineClust_h2_full_results.tsv"), 
+  quote=FALSE, sep="\t", col.names=TRUE, row.names=FALSE) 
+
 atacOrder <- atacOrder[atacOrder %in% unique(results$Category)]
 LatacOrder <- unlist(atac.FineClust)[atacOrder]
 
@@ -125,7 +129,7 @@ broadClust <- unlist(inv.FineClust)[LatacOrder] %>% gsub('[0-9]+', '', .) %>% su
 colors <- broadClustCmap[broadClust]
 names(colors) <- LatacOrder
 
-pdf("/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/GWAS/ldsc/h2_results_hm_FineClust.pdf", width=15, height=8)
+pdf("/oak/stanford/groups/wjg/boberrey/hairATAC/results/GWAS/ldsc/h2_results_hm_FineClust.pdf", width=15, height=8)
 ht_opt$simple_anno_size <- unit(0.25, "cm")
 ta <- HeatmapAnnotation(atac_cluster=colnames(mat),col=list(atac_cluster=colors), 
   show_legend=c("atac_cluster"=FALSE))

@@ -19,14 +19,14 @@ suppressPackageStartupMessages({
 })
 
 # Get additional functions, etc.:
-scriptPath <- "/home/users/boberrey/git_clones/hairATAC"
+scriptPath <- "/home/users/boberrey/git_clones/scScalpChromatin"
 source(paste0(scriptPath, "/misc_helpers.R"))
 source(paste0(scriptPath, "/matrix_helpers.R"))
 source(paste0(scriptPath, "/plotting_config.R"))
 
 # Read in cross validation results from gkmSVM train
-resultDir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/GWAS/gkmSVM/model_predictions"
-plotDir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/GWAS/gkmSVM"
+resultDir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/GWAS/gkmSVM/model_predictions"
+plotDir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/GWAS/gkmSVM"
 
 res_files <- list.files(
   path=resultDir, 
@@ -83,7 +83,7 @@ atacOrder <- c(
   "aMy4", # "M2.macs_3", 
   "aMy2", # "cDC2_1", # CD1c, CLEC10a (conventional DCs - type 2)
   #"aMy7", # "cDC2_2", 
-  "aMy5", # "CLEC9a.DC", # CLEC9a, CLEC4C, XCR1 https://www.frontiersin.org/articles/10.3389/fimmu.2014.00239/full
+  "aMy5", # "CLEC9a.DC", # CLEC9a, CLEC4C, XCR1
   # Keratinocytes
   "aKc1", # "Basal.Kc_1",
   "aKc2", # "Spinous.Kc_2",
@@ -124,7 +124,7 @@ colnames(auprc_mat) <- unlist(atac.FineClust)[colnames(auprc_mat)]
 LatacOrder <- LatacOrder[LatacOrder %in% rownames(auroc_mat)]
 
 # AUROC heatmap
-pdf(paste0(plotDir, "/crosstype_AUROC_hm_1000bpNC.pdf"), width=12, height=12)
+pdf(paste0(plotDir, "/crosstype_AUROC_hm_1000bp.pdf"), width=12, height=12)
 ht_opt$simple_anno_size <- unit(0.25, "cm")
 hm <- BORHeatmap(
   auroc_mat[LatacOrder, LatacOrder], 
@@ -144,7 +144,7 @@ draw(hm)
 dev.off()
 
 # AUPRC heatmap
-pdf(paste0(plotDir, "/crosstype_AUPRC_1000bpNC.pdf"), width=12, height=12)
+pdf(paste0(plotDir, "/crosstype_AUPRC_hm_1000bp.pdf"), width=12, height=12)
 ht_opt$simple_anno_size <- unit(0.25, "cm")
 hm <- BORHeatmap(
   auprc_mat[LatacOrder, LatacOrder], 

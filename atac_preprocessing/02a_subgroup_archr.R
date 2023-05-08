@@ -22,10 +22,10 @@ source(paste0(scriptPath, "/misc_helpers.R"))
 addArchRThreads(threads = 8)
 
 # set working directory
-wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scATAC_preprocessing/baseline_preprocessing"
+wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/scATAC_preprocessing/baseline_preprocessing"
 
 # color palettes
-sample_cmap <- readRDS("/home/users/boberrey/git_clones/hairATAC/sample_cmap.rds")
+sample_cmap <- readRDS(paste0(scriptPath, "/sample_cmap.rds"))
 
 #Set/Create Working Directory to Folder
 dir.create(wd, showWarnings = FALSE, recursive = TRUE)
@@ -171,7 +171,7 @@ proj$BroadClust <- proj$NamedClust %>% gsub('[0-9]+', '', .) %>% sub('.', '', .)
 
 # Reuse RNA colors for clusters with the same label
 source(paste0(scriptPath, "/cluster_labels.R")) # Load labels from file
-colorPal <- readRDS("/home/users/boberrey/git_clones/hairATAC/scalpClusterColors.rds") # Load pre-set color palate for all broad clusters
+colorPal <- readRDS(paste0(scriptPath, "/scalpClusterColors.rds")) # Load pre-set color palate for all broad clusters
 rnaNamedClustCmap <- readRDS(paste0(scriptPath, "/scRNA_NamedClust_cmap.rds")) %>% unlist()
 rnaLabelClustCmap <- rnaNamedClustCmap
 names(rnaLabelClustCmap) <- unlist(rna.NamedClust)[names(rnaLabelClustCmap)]
@@ -208,7 +208,7 @@ names(leftoutColors) <- leftout
 
 atacNamedClustCmap <- c(atacNamedClustCmap, leftoutColors)
 
-saveRDS(atacNamedClustCmap, file="/home/users/boberrey/git_clones/hairATAC/scATAC_NamedClust_cmap.rds")
+saveRDS(atacNamedClustCmap, file=paste0(scriptPath, "/scATAC_NamedClust_cmap.rds"))
 
 barwidth=0.9
 
@@ -285,7 +285,7 @@ subgroups <- c("Lymphoid", "Myeloid", "Keratinocytes", "Fibroblasts", "Endotheli
 # Generate and cluster each of the subprojects
 sub_proj_list <- lapply(subgroups, function(sg){
   message(sprintf("Subsetting %s...", sg))
-  outdir <- sprintf("/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scATAC_preprocessing/subclustered_%s", sg)
+  outdir <- sprintf("/oak/stanford/groups/wjg/boberrey/hairATAC/results/scATAC_preprocessing/subclustered_%s", sg)
   subClusterArchR(proj, subCells=subClusterCells[[sg]], outdir=outdir)
 })
 names(sub_proj_list) <- subgroups

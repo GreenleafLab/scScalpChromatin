@@ -21,14 +21,14 @@ source(paste0(scriptPath, "/misc_helpers.R"))
 # Setup working directory and make a plot dir
 
 #Set/Create Working Directory to Folder
-wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scRNA_preprocessing/preprocessing_output"
+wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/scRNA_preprocessing/preprocessing_output"
 plotDir <- paste0(wd,"/clustering_qc")
 dir.create(wd, showWarnings = FALSE, recursive = TRUE)
 setwd(wd)
 dir.create(plotDir, showWarnings = FALSE, recursive = TRUE)
 
 # color palettes
-sample_cmap <- readRDS("/home/users/boberrey/git_clones/hairATAC/sample_cmap.rds")
+sample_cmap <- readRDS("/home/users/boberrey/git_clones/scScalpChromatin/sample_cmap.rds")
 
 ##########################################
 # Read in previously created Seurat object

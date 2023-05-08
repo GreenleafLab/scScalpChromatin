@@ -23,14 +23,14 @@ source(paste0(scriptPath, "/matrix_helpers.R"))
 # Setup working directory and make a plot dir
 
 #Set/Create Working Directory to Folder
-wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scRNA_preprocessing/preprocessing_output"
+wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/scRNA_preprocessing/preprocessing_output"
 plotDir <- paste0(wd,"/expression_plots_scalp")
 dir.create(wd, showWarnings = FALSE, recursive = TRUE)
 setwd(wd)
 dir.create(plotDir, showWarnings = FALSE, recursive = TRUE)
 
 # color palettes
-sample_cmap <- readRDS("/home/users/boberrey/git_clones/hairATAC/sample_cmap.rds")
+sample_cmap <- readRDS("/home/users/boberrey/git_clones/scScalpChromatin/sample_cmap.rds")
 
 ##########################################
 # Read in previously created Seurat object
@@ -130,8 +130,8 @@ scalpClusterColors <- c(
   )
 
 # Save these colors for use in other scripts
-saveRDS(scalpClusterColors, file = "/home/users/boberrey/git_clones/hairATAC/scalpClusterColors.rds")
-#scalpClusterColors <- readRDS("/home/users/boberrey/git_clones/hairATAC/scalpClusterColors.rds")
+#saveRDS(scalpClusterColors, file = "/home/users/boberrey/git_clones/scScalpChromatin/scalpClusterColors.rds")
+scalpClusterColors <- readRDS("/home/users/boberrey/git_clones/scScalpChromatin/scalpClusterColors.rds")
 colorPal <- scalpClusterColors
 expandedColors <- getColorMap(cmaps_BOR$stallion, n=50)
 expandedColors <- expandedColors[expandedColors %ni% colorPal]
@@ -159,11 +159,11 @@ for(bl in broadLabels){
     }
 }
 # Save color palette for 'NamedClust'
-saveRDS(narrowColors, file = "/home/users/boberrey/git_clones/hairATAC/scRNA_NamedClust_cmap.rds")
+#saveRDS(narrowColors, file = "/home/users/boberrey/git_clones/scScalpChromatin/scRNA_NamedClust_cmap.rds")
 
 # Load colormaps for plotting:
 barwidth=0.9
-sample_cmap <- readRDS("/home/users/boberrey/git_clones/hairATAC/sample_cmap.rds")
+sample_cmap <- readRDS("/home/users/boberrey/git_clones/scScalpChromatin/sample_cmap.rds")
 sample_cmap <- sample_cmap[names(sample_cmap) %in% unique(obj$Sample)] %>% unlist()
 scalpClusterColors <- readRDS(paste0(scriptPath, "/scalpClusterColors.rds")) %>% unlist()
 narrowColors <- readRDS(paste0(scriptPath, "/scRNA_NamedClust_cmap.rds")) %>% unlist()
@@ -242,7 +242,8 @@ makeSubClusts <- function(obj, ident, subgroups, outdir){
   }
 }
 
-subclustDir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scRNA_preprocessing/harmonized_subclustering"
+#subclustDir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scRNA_preprocessing/harmonized_subclustering"
+subclustDir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/scRNA_preprocessing/harmonized_subclustering"
 dir.create(subclustDir, showWarnings = FALSE, recursive = TRUE)
 
 makeSubClusts(

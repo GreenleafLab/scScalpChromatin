@@ -9,7 +9,7 @@
 
 
 # Source config file
-source ${HOME}/git_clones/scScalpChromatin/GWAS_scripts/LDSC/00_ldsc_config.conf
+source ${HOME}/git_clones/scScalpChromatin/GWAS/LDSC/00_ldsc_config.conf
 
 # Activate conda environment
 source /oak/stanford/groups/wjg/boberrey/miniconda3/etc/profile.d/conda.sh

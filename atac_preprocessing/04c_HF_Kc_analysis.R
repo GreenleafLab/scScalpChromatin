@@ -24,8 +24,8 @@ addArchRThreads(threads = 8)
 
 # set working directory
 subgroup <- "HF_Kc"
-wd <- sprintf("/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scATAC_preprocessing/subclustered_%s", subgroup)
-full_dir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scATAC_preprocessing/fine_clustered"
+wd <- sprintf("/oak/stanford/groups/wjg/boberrey/hairATAC/results/scATAC_preprocessing/subclustered_%s", subgroup)
+full_dir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/scATAC_preprocessing/fine_clustered"
 
 #Set/Create Working Directory to Folder
 dir.create(wd, showWarnings = FALSE, recursive = TRUE)
@@ -44,7 +44,7 @@ pointSize <- 2
 ##########################################################################################
 
 atac_proj <- loadArchRProject(wd, force=TRUE)
-rna_proj <- readRDS(sprintf("/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scRNA_preprocessing/harmonized_subclustering/%s/%s.rds", subgroup, subgroup))
+rna_proj <- readRDS(sprintf("/oak/stanford/groups/wjg/boberrey/hairATAC/results/scRNA_preprocessing/harmonized_subclustering/%s/%s.rds", subgroup, subgroup))
 
 plotDir <- paste0(atac_proj@projectMetadata$outputDirectory, "/Plots")
 
@@ -54,7 +54,7 @@ atac_sample_cmap <- sample_cmap[names(sample_cmap) %in% unique(atac_proj$Sample2
 disease_cmap <- head(cmaps_BOR$stallion,3)
 names(disease_cmap) <- c("AA", "C_SD", "C_PB")
 
-rna_sub_cmap <- readRDS(sprintf("/home/users/boberrey/git_clones/hairATAC/rna_cmap_%s.rds", subgroup))
+rna_sub_cmap <- readRDS(paste0(scriptPath, sprintf("/rna_cmap_%s.rds", subgroup)))
 
 # Load labels from file
 source(paste0(scriptPath, "/cluster_labels.R"))
@@ -170,7 +170,7 @@ catchup <- remainingColors[1:length(leftout)]
 names(catchup) <- leftout
 atac_sub_cmap <- c(atac_sub_cmap, catchup)
 
-saveRDS(atac_sub_cmap, file = sprintf("/home/users/boberrey/git_clones/hairATAC/atac_cmap_%s.rds", subgroup))
+saveRDS(atac_sub_cmap, file=paste0(scriptPath, sprintf("/atac_cmap_%s.rds", subgroup)))
 
 atac_label_cmap <- atac_sub_cmap
 names(atac_label_cmap) <- unlist(atac.FineClust)[names(atac_label_cmap)]
@@ -440,7 +440,7 @@ plotPDF(plotList = p,
     addDOC = FALSE, width = 5, height = 5)
 
 
-atac_sub_cmap <- readRDS(file=sprintf("/home/users/boberrey/git_clones/hairATAC/atac_cmap_%s.rds", subgroup))
+atac_sub_cmap <- readRDS(file=paste0(scriptPath, sprintf("/atac_cmap_%s.rds", subgroup)))
 
 # Tracks of genes:
 p <- plotBrowserTrack(
@@ -463,9 +463,6 @@ plotPDF(plotList = p,
     ArchRProj = atac_proj, 
     addDOC = FALSE, 
     width = 6, height = 7)
-
-
-
 
 # Plot ChromVAR deviations
 motifPositions <- getPositions(atac_proj)
@@ -510,7 +507,7 @@ library(SingleCellExperiment)
 # Subset Milo object to remove samples that are too lowly represented:
 ccd <- atac_proj@cellColData
 samp_freqs <- getFreqs(ccd$Sample2)
-valid_samps <- samp_freqs[samp_freqs > 10] %>% names() # Sort of ridiculous 
+valid_samps <- samp_freqs[samp_freqs > 10] %>% names()
 valid_cells <- rownames(ccd[ccd$Sample2 %in% valid_samps,])
 
 # First get just the peak matrix (what we will use as our 'counts' matrix)
@@ -539,7 +536,7 @@ reduced.dims <- "LSI" # Milo capitalizes the dim reduc names
 milo_proj <- buildGraph(milo_proj, k=k, d=d, reduced.dim=reduced.dims)
 
 # Defining representative neighborhoods on the KNN graph
-prop <- 0.3 # "We suggest using prop=0.1 for datasets of less than 30k cells. For bigger datasets using prop=0.05 should be sufficient (and makes computation faster)"
+prop <- 0.3
 milo_proj <- makeNhoods(milo_proj, prop=prop, k=k, d=d, refined=TRUE, reduced_dims=reduced.dims)
 
 # "As a rule of thumb we want to have an average neighbourhood size over 5 x N_samples"
@@ -571,6 +568,28 @@ nh_graph_pl <- plotNhoodGraphDA(milo_proj, da_results, layout="UMAP",
 pdf(paste0(plotDir, sprintf("/miloR_atac_DA_UMAP_%s.pdf", subgroup)), width=7, height=6)
 nh_graph_pl
 dev.off()
+
+# Save differential abundance results
+
+# First need to map Milo neighborhoods to majority cluster IDs
+nhoodmat <- milo_proj@nhoods
+cell_to_clust <- atac_proj$HFClust
+names(cell_to_clust) <- atac_proj$cellNames
+
+# For each nhood, identify the most common cluster
+nhood_to_clust <- apply(nhoodmat, 2, function(x){
+  cellnames <- names(x[x>0]) # Which cells are part of this nhood
+  names(sort(table(cell_to_clust[cellnames]), decreasing=TRUE))[1] # Most frequent cluster
+  })
+
+# Assign majority cluster to nhoods
+da_results$majority_cluster <- nhood_to_clust[da_results$Nhood]
+da_results$majority_lclust <- unlist(atac.FineClust)[da_results$majority_cluster]
+da_results <- da_results[order(da_results$PValue, decreasing=FALSE),]
+
+# Save table
+table_dir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/supplemental_tables"
+write.table(da_results, file=paste0(table_dir, "/HF_subclustered_Milo_results.tsv"), quote=FALSE, sep="\t", col.names=NA, row.names=TRUE) 
 
 ####################################################################################
 # Hair follicle trajectories
@@ -787,4 +806,8 @@ pdf(paste0(plotDir, "/HF_shaft_varGene_topGO.pdf"), width=8, height=6)
 print(up_go_plot)
 dev.off()
 
+
+####################################################################################
+# Explore differences in WNT dynamics between control and AA samples
+####################################################################################
 

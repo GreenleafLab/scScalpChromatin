@@ -32,8 +32,8 @@ source(paste0(scriptPath, "/archr_helpers.R"))
 addArchRThreads(threads = 8)
 
 # set working directory (The directory of the full preprocessed archr project)
-wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scATAC_preprocessing/fine_clustered"
-gkm_res_dir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/GWAS/gkmSVM/snp_results"
+wd <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/scATAC_preprocessing/fine_clustered"
+gkm_res_dir <- "/oak/stanford/groups/wjg/boberrey/hairATAC/results/GWAS/gkmSVM/snp_results"
 
 #Set/Create Working Directory to Folder
 dir.create(wd, showWarnings = FALSE, recursive = TRUE)
@@ -83,11 +83,11 @@ GImat <- getMatrixFromProject(atac_proj, useMatrix="GeneIntegrationMatrix")
 # Links fine-mapped SNPs to candidate genes using Peak-to-Gene links
 ##########################################################################################
 
-fmGR <- readRDS("/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/GWAS/gkmSVM/snp_centered_250bp_fastas_v3/250bpSNPCentered.rds")
+fmGR <- readRDS("/oak/stanford/groups/wjg/boberrey/hairATAC/results/GWAS/gkmSVM/snp_centered_250bp_fastas_v3/250bpSNPCentered.rds")
 
 # Load full project p2g links, plot loops, etc.
-full_p2gGR <- readRDS(file="/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scATAC_preprocessing/fine_clustered/multilevel_p2gGR.rds") # NOT merged or correlation filtered
-plot_loop_list <- readRDS(file="/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scATAC_preprocessing/fine_clustered/multilevel_plot_loops.rds")
+full_p2gGR <- readRDS(file="/oak/stanford/groups/wjg/boberrey/hairATAC/results/scATAC_preprocessing/scATAC_preprocessing/fine_clustered/multilevel_p2gGR.rds") # NOT merged or correlation filtered
+plot_loop_list <- readRDS(file="/oak/stanford/groups/wjg/boberrey/hairATAC/results/scATAC_preprocessing/fine_clustered/multilevel_plot_loops.rds")
 
 # Get metadata from full project to keep for new p2g links
 originalP2GLinks <- metadata(atac_proj@peakSet)$Peak2GeneLinks

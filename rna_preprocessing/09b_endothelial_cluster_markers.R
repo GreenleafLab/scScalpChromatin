@@ -30,7 +30,7 @@ source(paste0(scriptPath, "/GO_wrappers.R"))
 # Setup working directory and make a plot dir
 
 #Set/Create Working Directory to Folder
-wd <- sprintf("/oak/stanford/groups/wjg/boberrey/hairATAC/scratch_copy/scratch/analyses/scRNA_preprocessing/harmonized_subclustering/%s", subgroup)
+wd <- sprintf("/oak/stanford/groups/wjg/boberrey/hairATAC/results/scRNA_preprocessing/harmonized_subclustering/%s", subgroup)
 plotDir <- paste0(wd,"/expression_plots")
 dir.create(wd, showWarnings = FALSE, recursive = TRUE)
 setwd(wd)
@@ -184,7 +184,7 @@ dev.off()
 fineclust_cmap <- cmaps_BOR$stallion[1:length(fineClust)]
 names(fineclust_cmap) <- names(getFreqs(obj$FineClust))
 # Save color palette for 'NamedClust'
-saveRDS(fineclust_cmap, file = sprintf("/home/users/boberrey/git_clones/hairATAC/rna_cmap_%s.rds", subgroup))
+saveRDS(fineclust_cmap, file = paste0(scriptPath, sprintf("/rna_cmap_%s.rds", subgroup)))
 
 ### Cluster UMAP ###
 umapDF <- data.frame(Embeddings(object = obj, reduction = "umap"), obj$FineClust)
