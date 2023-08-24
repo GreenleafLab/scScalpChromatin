@@ -1,6 +1,6 @@
 # scScalpChromatin
 
-Repository to host code for "Integrated single-cell chromatin and transcriptomic analyses of human scalp identify gene regulatory programs and critical cell types for hair and skin diseases" by Ober-Reynolds et al.
+Repository to host code for ["Integrated single-cell chromatin and transcriptomic analyses of human scalp identify gene-regulatory programs and critical cell types for hair and skin diseases" by Ober-Reynolds et al. Nature Genetics. 2023.](https://doi.org/10.1038/s41588-023-01445-4)
 
 Scripts for performing initial scATAC data processing and subclustering are found in scATAC directory. Scripts for performing initial scRNA data processing and subclustering are found in the scRNA directory. Numbers preceeding these scripts indicate the order in which scripts should be used.
 
